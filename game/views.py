@@ -1,3 +1,4 @@
-from django.shortcuts import render
+from .login import login_view, logout_view
+from .dashboard import dashboard_view
 
-# Create your views here.
+__all__ = ['login_view', 'logout_view', 'dashboard_view']
