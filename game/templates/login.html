@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Login - Business Game</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Login - Business Game{% endblock %}
+
+{% block content %}
   <h2>Entrar no Sistema</h2>
 
   {% if messages %}
@@ -15,9 +14,12 @@
 
   <form method="POST">
     {% csrf_token %}
-    <input type="text" name="username" placeholder="Usuário" required><br><br>
-    <input type="password" name="senha" placeholder="Senha" required><br><br>
+    <label for="username">Usuário:</label><br>
+    <input type="text" name="username" id="username" required><br><br>
+
+    <label for="senha">Senha:</label><br>
+    <input type="password" name="senha" id="senha" required><br><br>
+
     <button type="submit">Entrar</button>
   </form>
-</body>
-</html>
+{% endblock %}
