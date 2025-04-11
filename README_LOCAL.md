@@ -47,10 +47,6 @@ Isso cria as tabelas do banco (como `auth_user`, `sessions`, etc.).
 python manage.py createsuperuser
 ```
 
-Dica: use algo simples como `admin / admin123` só para testar.
-
----
-
 ### 6. Iniciar o servidor local
 ```bash
 python manage.py runserver
