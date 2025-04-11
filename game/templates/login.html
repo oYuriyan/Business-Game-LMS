@@ -22,4 +22,16 @@
 
     <button type="submit">Entrar</button>
   </form>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('form');
+      const botao = form.querySelector('button');
+  
+      form.addEventListener('submit', () => {
+        botao.disabled = true;
+        botao.textContent = 'Carregando...';
+        botao.style.opacity = '0.6';
+      });
+    });
+  </script>
 {% endblock %}
