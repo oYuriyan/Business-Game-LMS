@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Lobby - Business Game{% endblock %}
+
+{% block content %}
+  <h2>Bem-vindo ao Lobby, {{ usuario.username }}</h2>
+
+  <h3>Partidas disponíveis</h3>
+  <ul>
+    {% for partida in partidas %}
+      <li>
+        {{ partida.nome }} 
+        <button>Entrar</button>
+      </li>
+    {% empty %}
+      <li>Nenhuma partida disponível</li>
+    {% endfor %}
+  </ul>
+
+  <hr>
+
+  <h3>Criar nova partida</h3>
+  <form method="POST">
+    {% csrf_token %}
+    <input type="text" name="nome_partida" placeholder="Nome da partida" required>
+    <button type="submit">Criar</button>
+  </form>
+{% endblock %}
