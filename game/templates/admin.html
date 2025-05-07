@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Painel do Administrador{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center;">Painel do Administrador</h2>
+
+<div class="dashboard-grid">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h3>Criar nova partida</h3>
+        <form method="POST" style="display: inline-block;">
+          {% csrf_token %}
+          <input type="text" name="nome_partida" placeholder="Nome da nova partida" required>
+          <button type="submit">Criar</button>
+        </form>
+      </div>
+  {% for partida in partidas %}
+    <div class="card">
+      <h3>{{ partida.nome }}</h3>
+      <p>Criada em: {{ partida.data_criacao|date:"d/m/Y H:i" }}</p>
+      <p>Status: {{ partida.ativa|yesno:"Ativa,Finalizada" }}</p>
+      <button disabled>Iniciar nova rodada</button>
+    </div>
+  {% empty %}
+    <p>Nenhuma partida registrada.</p>
+  {% endfor %}
+</div>
+{% endblock %}

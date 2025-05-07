@@ -14,6 +14,34 @@
   </div>
 </div>
 
+<div style="text-align: center;">
+  <a href="{% url 'dashboard' %}">
+    <button>Voltar ao Dashboard</button>
+  </a>
+</div>
+
+  <h3>Partidas disponíveis</h3>
+  <ul>
+    {% for partida in partidas %}
+      <li>
+        {{ partida.nome }} 
+        <button>Entrar</button>
+      </li>
+    {% empty %}
+      <li>Nenhuma partida disponível</li>
+    {% endfor %}
+  </ul>
+
+  <hr>
+
+  <h3>Criar nova partida</h3>
+  <form method="POST">
+    {% csrf_token %}
+    <input type="text" name="nome_partida" placeholder="Nome da partida" required>
+    <button type="submit">Criar</button>
+  </form>
+{% endblock %}
+
 <style>
   .orbita-container {
     display: flex;
@@ -54,31 +82,3 @@
     }
   }
 </style>
-
-<div style="text-align: center;">
-  <a href="{% url 'dashboard' %}">
-    <button>Voltar ao Dashboard</button>
-  </a>
-</div>
-
-  <h3>Partidas disponíveis</h3>
-  <ul>
-    {% for partida in partidas %}
-      <li>
-        {{ partida.nome }} 
-        <button>Entrar</button>
-      </li>
-    {% empty %}
-      <li>Nenhuma partida disponível</li>
-    {% endfor %}
-  </ul>
-
-  <hr>
-
-  <h3>Criar nova partida</h3>
-  <form method="POST">
-    {% csrf_token %}
-    <input type="text" name="nome_partida" placeholder="Nome da partida" required>
-    <button type="submit">Criar</button>
-  </form>
-{% endblock %}

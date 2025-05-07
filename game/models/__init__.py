@@ -1,3 +1,3 @@
 from django.db import models
-
-# Create your models here.
+from .partida import Partida
+from .rodada import Rodada
