@@ -1,16 +1,23 @@
 
-# ✅ Guia Local para Rodar o Projeto — Business Game
+# Guia Local para Rodar o Projeto — Business Game
 
 Este documento explica **como iniciar e testar o projeto Business Game localmente**.
 
----
-
-## 🚀 Etapas completas para rodar o projeto
 
 ### 1. Abrir o projeto no VS Code
 Certifique-se de que a pasta `business_game/` está aberta no VS Code.
 
 ---
+
+## Dicas
+- Sempre ative o ambiente virtual antes de rodar qualquer comando.
+- Se trocar de computador, instale tudo com:
+  ```bash
+  python -m venv venv
+  source venv/Scripts/activate
+  pip install -r requirements.txt
+  ```
+
 
 ### 2. Ativar o ambiente virtual
 
@@ -62,16 +69,5 @@ Starting development server at http://127.0.0.1:8000/
 ### 7. Acessar no navegador
 - Login: [http://localhost:8000/login/](http://localhost:8000/login/)
 - Dashboard: [http://localhost:8000/dashboard/](http://localhost:8000/dashboard/)
-
----
-
-## 🧩 Dicas úteis
-- Sempre ative o ambiente virtual antes de rodar qualquer comando.
-- Se trocar de computador, instale tudo com:
-  ```bash
-  python -m venv venv
-  source venv/Scripts/activate
-  pip install -r requirements.txt
-  ```
 
 ---
