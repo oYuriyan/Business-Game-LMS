@@ -1,0 +1,83 @@
+/* ---------------------------
+        ESTILOS GLOBAIS
+   ---------------------------
+   Contém: Tipografia, botões, inputs, containers e variáveis globais
+   Aplica-se: Todas as páginas do sistema
+*/
+
+:root {
+    --cor-primaria: #1A237E;       /* Azul institucional */
+    --cor-secundaria: #FF9800;     /* Laranja estrategista */
+    --cor-ciano: #00BCD4;          /* Destaque moderno */
+    --cor-fundo: #F5F5F5;          /* Fundo neutro claro */
+    --cor-texto: #212121;          /* Texto principal */
+    --cor-sucesso: #4CAF50;
+    --cor-erro: #F44336;
+    --cor-aviso: #FFC107;
+    --cor-claro: #E0E0E0;
+  }
+  
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    line-height: 1.6;
+  }
+  
+  /* Container padrão */
+  .container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 2rem;
+  }
+  
+  /* Botões padrão */
+  button,
+  input[type="submit"] {
+    background-color: var(--cor-primaria);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: var(--cor-secundaria);
+  }
+  
+  /* Inputs padrão */
+  input[type="text"],
+  input[type="password"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.6rem;
+    border: 2px solid var(--cor-primaria);
+    border-radius: 6px;
+    margin: 0.5rem 0 1.5rem 0;
+    font-size: 1rem;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: var(--cor-ciano);
+    box-shadow: 0 0 4px var(--cor-ciano);
+  }
+  
+  /* Títulos */
+  h1, h2, h3 {
+    color: var(--cor-primaria);
+  }
+  
+  /* Links */
+  a {
+    color: var(--cor-secundaria);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }

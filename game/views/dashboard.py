@@ -21,10 +21,10 @@ def lobby_view(request):
     if request.method == "POST":
         nome = request.POST.get("nome_partida")
         if nome:
-            Partida.objects.create(nome=nome, ativa=True)
+            Partida.objects.create(nome=nome, status=True)
 
     # Lista de partidas ativas
-    partidas = Partida.objects.filter(ativa=True).order_by('-data_criacao')
+    partidas = Partida.objects.all().order_by('-data_inicio')
 
     return render(request, 'lobby.html', {
         'usuario': request.user,

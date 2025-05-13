@@ -1,135 +1,16 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Business Game - Bem-vindo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #1c003d, #2d0059);
-      color: #ffffff;
-    }
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+{% endblock %}
 
-    .hero {
-      text-align: center;
-      padding: 4rem 2rem;
-      animation: fadeIn 1.5s ease-in-out;
-    }
+{% block title %}Business Game - Bem-vindo{% endblock %}
 
-    .hero h1 {
-      font-size: 3.5rem;
-      margin-bottom: 1rem;
-      color: #00d1ff;
-    }
-
-    .hero p {
-      font-size: 1.4rem;
-      color: #e0e0e0;
-      max-width: 600px;
-      margin: 0 auto 2rem auto;
-    }
-
-    .cta {
-      margin-top: 2rem;
-    }
-
-    .cta a {
-      background-color: #00d1ff;
-      color: #1c003d;
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.2rem;
-      transition: background 0.3s;
-      box-shadow: 0 4px 12px rgba(0, 209, 255, 0.2);
-    }
-
-    .cta a:hover {
-      background-color: #40e0d0;
-    }
-
-    .info-section {
-      background-color: #2d0059;
-      padding: 3rem 2rem;
-      text-align: center;
-    }
-
-    .info-section h2 {
-      color: #00d1ff;
-      margin-bottom: 1rem;
-    }
-
-    .info-section p {
-      color: #cfcfcf;
-      max-width: 800px;
-      margin: 0 auto;
-      font-size: 1.1rem;
-    }
-
-    .icon-grid {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-top: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .icon-grid img {
-      width: 60px;
-      height: 60px;
-      filter: drop-shadow(0 0 3px #00d1ff);
-      transition: transform 0.3s ease;
-    }
-
-    .icon-grid img:hover {
-      transform: scale(1.1);
-    }
-
-    .svg-container {
-      max-width: 800px;
-      margin: 2rem auto;
-      text-align: center;
-    }
-
-    .svg-container svg {
-      width: 100%;
-      height: auto;
-      animation: fadeInUp 1s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(-20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 768px) {
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-      .hero p {
-        font-size: 1.1rem;
-      }
-      .cta a {
-        padding: 0.8rem 1.5rem;
-        font-size: 1rem;
-      }
-    }
-  </style>
-</head>
-<body>
-
+{% block content %}
   <section class="hero">
     <h1>Business Game</h1>
+    <button id="toggle-theme" class="theme-button">🌓 Alternar Tema</button>
     <p>Simule tomadas de decisão logísticas, estratégicas e administrativas em um ambiente gamificado e dinâmico.</p>
     <div class="cta">
       {% if user.is_authenticated %}
@@ -140,15 +21,28 @@
     </div>
   </section>
 
-  <section class="svg-container">
-    <!-- Exemplo de imagem SVG ilustrativa -->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="#00d1ff" d="M96 64c-17.7 0-32 14.3-32 32V416c0 17.7 14.3 32 32 32H544c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32H96zM64 32H576c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96C0 60.7 28.7 32 64 32z"/></svg>
-  </section>
+  <script>
+    // Verifica se tema está salvo no localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+    }
+  
+    // Alterna tema e salva no localStorage
+    document.getElementById('toggle-theme').addEventListener('click', function () {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
 
   <section class="info-section">
     <h2>Sobre o Projeto</h2>
     <p>
-      O Business Game é um simulador de mercado desenvolvido para estudantes e entusiastas da logística e administração. Aqui, você poderá criar ou entrar em partidas e vivenciar desafios reais do mercado em tempo real, com decisões que impactam o fluxo de toda a simulação.
+      O Business Game é um simulador de mercado desenvolvido para estudantes e entusiastas da logística e administração.
     </p>
 
     <div class="icon-grid">
@@ -159,5 +53,7 @@
     </div>
   </section>
 
-</body>
-</html>
+  <footer>
+    <p>&copy; 2025 Business Game. Todos os direitos reservados.</p>
+  </footer>
+{% endblock %}

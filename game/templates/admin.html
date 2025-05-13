@@ -1,8 +1,30 @@
 {% extends "base.html" %}
+{% load static %}
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
 {% block title %}Painel do Administrador{% endblock %}
 
 {% block content %}
 <h2 style="text-align: center;">Painel do Administrador</h2>
+
+<section class="dashboard">
+    <div class="card" onclick="window.location.href='/usuarios/'">
+      <h2>Usuários</h2>
+      <p>Gerencie os usuários da plataforma</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/produtos/'">
+      <h2>Produtos</h2>
+      <p>Edite, exclua e cadastre novos</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/relatorios/'">
+      <h2>Relatórios</h2>
+      <p>Acesse gráficos e desempenho</p>
+    </div>
+  </section>
 
 <div class="dashboard-grid">
     <div style="text-align: center; margin-bottom: 2rem;">
@@ -23,5 +45,16 @@
   {% empty %}
     <p>Nenhuma partida registrada.</p>
   {% endfor %}
+
+  {% for partida in partidas %}
+    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+        <h3>{{ partida.nome }}</h3>
+        <p>Status: {{ partida.status }}</p>
+        <form method="POST" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" name="avancar_rodada" value="{{ partida.id }}">Avançar Rodada</button>
+        </form>
+    </div>
+{% endfor %}
 </div>
 {% endblock %}

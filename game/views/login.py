@@ -12,7 +12,7 @@ def login_view(request):
 
         if usuario is not None:
             login(request, usuario)
-            return redirect('dashboard')  # Redireciona para a próxima tela (ainda vamos criar)
+            return redirect('dashboard')  # Redireciona para a próxima tela 
         else:
             messages.error(request, 'Usuário ou senha inválidos.')
 

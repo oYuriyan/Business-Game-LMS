@@ -2,42 +2,14 @@
 <html lang="pt-br">
 <head>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block styles %}{% endblock %}
+
   <meta charset="UTF-8">
   <title>{% block title %}Business Game{% endblock %}</title>
-  
-  <!-- Estilos básicos 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      background-color: #f2f2f2;
-    }
-    header {
-      background-color: #1e90ff;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
-    nav {
-      background-color: #f5f5f5;
-      padding: 0.5rem 1rem;
-    }
-    nav a {
-      margin-right: 1rem;
-      text-decoration: none;
-      color: #333;
-    }
-    .content {
-      padding: 1rem;
-      background: white;
-      border-radius: 8px;
-      margin-top: 1rem;
-    }
-  </style>
-  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body>
 
   <header>
@@ -49,9 +21,9 @@
       <a href="{% url 'dashboard' %}">Dashboard</a>
       <a href="{% url 'lobby' %}">Lobby</a>
   
-      {% if user.is_staff %}
-        <a href="{% url 'admin' %}">Admin</a>
-      {% endif %}
+    {% if user.is_authenticated and user.is_staff %}
+      <a href="{% url 'admin' %}">Administração</a>
+    {% endif %}
   
       <a href="{% url 'logout' %}">Sair</a>
     {% else %}

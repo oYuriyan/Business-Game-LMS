@@ -1,0 +1,19 @@
+/* --------------------------
+         TELA DE LOGIN
+   -------------------------- */
+
+   .login-form {
+    background-color: white;
+    padding: 2rem;
+    max-width: 400px;
+    margin: 4rem auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  
+  .login-form h2 {
+    text-align: center;
+    color: var(--cor-primaria);
+    margin-bottom: 1.5rem;
+  }
+  

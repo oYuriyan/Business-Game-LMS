@@ -1,9 +1,86 @@
-<!DOCTYPE html>
 {% extends "base.html" %}
+{% load static %}
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
 
 {% block title %}Login - Business Game{% endblock %}
 
 {% block content %}
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        input{
+            width: 150;
+        }
+        .cadastro{
+            margin: 5px;
+        }
+        label{
+            width: 100px;
+            text-align: right;
+            padding-right: 5px;
+        }
+        fieldset{
+            margin: 10px;
+            border-radius: 10px;
+            border-color: rgb(0, 0, 0);
+        }
+    </style>
+</head>
+<body>
+    <font face="Arial">
+    <form method="post">
+        <h1>Formulário de cadastro</h1>
+        <fieldset>
+            <legend>Dados Pessoais  </legend>
+        <div class="cadastro">
+            <label>Nome: <input type="text" name="name"></label>
+            <label>E-mail: <input type="email" name="emaik"></label>
+
+        </div>
+        <div class="cadastro">
+            <label>Profissão: <input type="text" name="Profissão"></label>
+            <label>Empresa: <input type="text" name="Empresa"></label>
+        </div>
+        </fieldset>
+            <fieldset>
+            <legend>Endereço</legend>
+        <div class="cadastro">
+            <label>Endereço: <input type="text" name="address"></label>
+            <label>Número: <input type="number" name="number"></label>
+        </div>
+        <div class="cadastro">
+            <label>Bairro: <input type="text" name="Bairro" ></label><br>
+        </div>
+        <div class="cadastro">
+            <label>Cidade/UF: <input type="text" name="city" ></label>
+            </fieldset>
+        <fieldset>
+            <legend>Informações de contato</legend>
+          <div class="cadastro">
+              <label>Celular: <input type="tel" name="number_phone"></label>
+              <label>Whatsapp: <input type="tel" name="Whatsapp"></label>
+          </div>
+          <div class="cadastro">
+              <label>Linkedin: <input type="url" name="Linkedin"></label>
+              <label>GitHub: <input type="url" name="GitHub"></label>
+        </fieldset>
+        </div>
+        <button type="reset">Limpar</button>
+        <label><button type="submit">Enviar Formulário</button></label>
+      </font>
+        </form>
+</body> -->
+
+
   <h2>Entrar no Sistema</h2>
 
   {% if messages %}
@@ -35,3 +112,6 @@
     });
   </script>
 {% endblock %}
+
+
+</html>
