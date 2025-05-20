@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block title %}Gerenciamento de Produtos{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center;">editar Produto: {{ produto.nome }}</h2>
+<form method="POST">
+    {% csrf_token %}
+    <label for="nome">Nome:</label>
+    <input type="text" name="nome" value="{{ produto.nome }}" required>
+    <label for="quantidade">Quantidade:</label>
+    <input type="number" name="quantidade" value="{{ produto.quantidade }}" required>
+    <label for="preco">Preço:</label>
+    <input type="number" name="preco" value="{{ produto.preco }}" step="0.01" required>
+    <button type="submit">Atualizar Produto</button>
+</form>
+{% endblock %}
