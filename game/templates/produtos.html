@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block title %}Gerenciamento de Produtos{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center;">Lista de Produtos</h2>
+
+<div style="text-align: right; margin-bottom: 20px;">
+  <a href="{% url 'criar_produto' %}"><button>Criar Novo Produto</button></a>
+</div>
+
+<table class="product-table">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Preço</th>
+      <th>Quantidade</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for produto in produtos %}
+    <tr>
+      <td>{{ produto.nome }}</td>
+      <td>R$ {{ produto.preco }}</td>
+      <td>{{ produto.quantidade }}</td>
+      <td>
+        <a href="{% url 'editar_produto' produto.id %}">Editar</a>
+        <form action="{% url 'excluir_produto' produto.id %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" style="text-align: center;">Nenhum produto encontrado.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

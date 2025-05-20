@@ -1,5 +1,5 @@
 from django.urls import path
-from game.views import login, dashboard, admin, landing # Importa as views separadas por módulo
+from game.views import login, dashboard, admin, landing, produtos # Importa as views separadas por módulo
 
 urlpatterns = [
 
@@ -13,7 +13,11 @@ urlpatterns = [
 
     # Painel do administrador
     path('admin/', admin.admin_view, name='admin'),
-    
+    path('produtos/', produtos.listar_produtos, name='listar_produtos'),
+    path('produtos/criar/', produtos.criar_produto, name='criar_produto'),
+    path('produtos/editar/<int:produto_id>/', produtos.editar_produto, name='editar_produto'),
+    path('produtos/excluir/<int:produto_id>/', produtos.excluir_produto, name='excluir_produto'),
+
     #Home
     path('', landing.landing_page_view, name='home')
 ]
