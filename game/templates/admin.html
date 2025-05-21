@@ -9,6 +9,16 @@
 {% block content %}
 <h2 style="text-align: center;">Painel do Administrador</h2>
 
+{% if messages %}
+  <div class="mensagens">
+    {% for message in messages %}
+      <div class="alerta {{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
 <section class="dashboard">
     <div class="card" onclick="window.location.href='/usuarios/'">
       <h2>Usuários</h2>
@@ -35,26 +45,26 @@
           <button type="submit">Criar</button>
         </form>
       </div>
-  {% for partida in partidas %}
-    <div class="card">
-      <h3>{{ partida.nome }}</h3>
-      <p>Criada em: {{ partida.data_criacao|date:"d/m/Y H:i" }}</p>
-      <p>Status: {{ partida.ativa|yesno:"Ativa,Finalizada" }}</p>
-      <button disabled>Iniciar nova rodada</button>
-    </div>
-  {% empty %}
-    <p>Nenhuma partida registrada.</p>
-  {% endfor %}
-
-  {% for partida in partidas %}
-    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
-        <h3>{{ partida.nome }}</h3>
-        <p>Status: {{ partida.status }}</p>
-        <form method="POST" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" name="avancar_rodada" value="{{ partida.id }}">Avançar Rodada</button>
-        </form>
-    </div>
-{% endfor %}
 </div>
+
+{% for info in partidas_info %}
+  <li>
+    {{ info.partida.nome }} 
+    {% if info.rodada_ativa %}
+      <span>- Rodada ativa: {{ info.rodada_ativa.numero }}</span>
+    {% endif %}
+    {% if info.pode_avancar %}
+      <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="avancar_rodada" value="{{ info.partida.id }}">
+        <button type="submit">Avançar Rodada</button>
+      </form>
+    {% else %}
+      <span>- Aguardando decisões dos jogadores</span>
+    {% endif %}
+  </li>
+{% empty %}
+  <li>Nenhuma partida disponível</li>
+{% endfor %}
+
 {% endblock %}
