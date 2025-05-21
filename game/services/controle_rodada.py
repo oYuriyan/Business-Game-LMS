@@ -1,5 +1,6 @@
 from game.models.rodada import Rodada
 from game.models.partida import Partida
+from game.models.decisao import Decisao
 from django.utils import timezone
 from django.db import transaction
 
@@ -10,38 +11,41 @@ Responsável por iniciar, encerrar e avançar rodadas de uma partida.
 Pode ser chamado tanto pelo admin quanto por eventos automáticos no futuro.
 """
 
-@transaction.atomic  # Garante que as ações abaixo aconteçam todas juntas (evita corrupção)
-def avancar_rodada(partida: Partida) -> Rodada:
+def todos_jogadores_decidiram(rodada: Rodada) -> bool:
+    jogadores = rodada.partida.jogadores.all()
+    jogadores_que_decidiram = (
+        Decisao.objects
+        .filter(rodada=rodada)
+        .values_list('jogador_id', flat=True)
+        .distinct()
+    )
+    return set(jogadores.values_list('id', flat=True)) == set(jogadores_que_decidiram)
+
+@transaction.atomic
+def avancar_rodada(partida: Partida) -> Rodada | None:
     """
-    Encerra a rodada atual (se houver) e cria uma nova rodada na partida.
+    Encerra a rodada atual (se todos os jogadores tiverem decidido) e cria uma nova.
 
-    Parâmetros:
-    - partida (Partida): instância da partida que terá sua rodada avançada
-
-    Retorna:
-    - nova_rodada (Rodada): instância da nova rodada criada
+    Retorna a nova rodada criada ou None caso a rodada atual ainda esteja incompleta.
     """
+    rodada_atual = Rodada.objects.filter(partida=partida, ativo=True).order_by('-numero').first()
 
-    # Busca a rodada atual ativa
-    rodada_atual = Rodada.objects.filter(partida=partida, ativa=True).order_by('-numero').first()
-
-    if rodada_atual:
-        rodada_atual.ativa = False  # Encerra a rodada atual
-        rodada_atual.save()
-
-        proximo_numero = rodada_atual.numero + 1
+    if not rodada_atual:
+        numero = 1
     else:
-        # Se for a primeira rodada
-        proximo_numero = 1
+        if not todos_jogadores_decidiram(rodada_atual):
+            return None  # ainda não pode avançar
 
-    # Cria a nova rodada
+        rodada_atual.ativo = False
+        rodada_atual.data_fim = timezone.now()
+        rodada_atual.save()
+        numero = rodada_atual.numero + 1
+
     nova_rodada = Rodada.objects.create(
         partida=partida,
-        numero=proximo_numero,
-        ativa=True,
+        numero=numero,
+        ativo=True,
         data_inicio=timezone.now()
     )
-
-    # (futuro): disparar eventos de início de rodada, resetar dados temporários etc.
-
+    
     return nova_rodada

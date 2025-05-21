@@ -67,3 +67,13 @@ header {
   color: #6c6c80;
   font-size: 14px;
 }
+
+.alerta {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+.alerta.success { background-color: #d4edda; color: #155724; }
+.alerta.warning { background-color: #fff3cd; color: #856404; }
+.alerta.error   { background-color: #f8d7da; color: #721c24; }
