@@ -18,6 +18,8 @@ urlpatterns = [
     path('produtos/editar/<int:produto_id>/', produtos.editar_produto, name='editar_produto'),
     path('produtos/excluir/<int:produto_id>/', produtos.excluir_produto, name='excluir_produto'),
 
+    path('admin/rodada/<int:rodada_id>/definir_demanda/', admin.definir_demanda_rodada, name='definir_demanda_rodada'),
+
     #Home
     path('', landing.landing_page_view, name='home')
 ]

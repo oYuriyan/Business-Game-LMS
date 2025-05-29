@@ -1,7 +1,7 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from game.models import Partida
+from game.models import Partida, Rodada, Produto
 from game.services.controle_rodada import avancar_rodada  # continua aqui
 
 @staff_member_required
@@ -54,4 +54,36 @@ def admin_view(request):
     return render(request, 'admin.html', {
         'partidas_info': partidas_info,
         'usuario': request.user,
+    })
+
+@staff_member_required
+def definir_demanda_rodada(request, rodada_id):
+    rodada = get_object_or_404(Rodada, id=rodada_id, ativo=True) # Só para rodadas ativas
+    produtos_disponiveis = Produto.objects.all() # Para o admin escolher o produto demandado
+
+    if request.method == 'POST':
+        produto_id = request.POST.get('produto_demandado')
+        quantidade = request.POST.get('quantidade_demandada')
+        destino = request.POST.get('destino_demanda')
+        # preco_max = request.POST.get('preco_maximo_aceitavel') # Opcional
+
+        if not produto_id or not quantidade or not destino:
+            messages.error(request, "Todos os campos da demanda são obrigatórios.")
+        else:
+            try:
+                rodada.produto_demandado = Produto.objects.get(id=produto_id)
+                rodada.quantidade_demandada = int(quantidade)
+                rodada.destino_demanda = destino
+                # if preco_max: rodada.preco_maximo_aceitavel = Decimal(preco_max)
+                rodada.save()
+                messages.success(request, f"Demanda para a rodada {rodada.numero} da partida '{rodada.partida.nome}' definida com sucesso.")
+                return redirect('admin')
+            except Produto.DoesNotExist:
+                messages.error(request, "Produto selecionado inválido.")
+            except ValueError:
+                 messages.error(request, "Quantidade deve ser um número.")
+        
+    return render(request, 'definir_demanda.html', {
+        'rodada': rodada,
+        'produtos_disponiveis': produtos_disponiveis
     })

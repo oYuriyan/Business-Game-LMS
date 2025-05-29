@@ -52,6 +52,7 @@
     {{ info.partida.nome }} 
     {% if info.rodada_ativa %}
       <span>- Rodada ativa: {{ info.rodada_ativa.numero }}</span>
+      <a href="{% url 'definir_demanda_rodada' info.rodada_ativa.id %}">Definir/Ver Demanda</a>
     {% endif %}
     {% if info.pode_avancar %}
       <form method="post" style="display:inline;">
