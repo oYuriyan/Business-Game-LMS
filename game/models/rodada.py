@@ -11,20 +11,14 @@ class Rodada(models.Model):
     data_inicio = models.DateTimeField(default=timezone.now)
     data_fim = models.DateTimeField(null=True, blank=True)
 
-    produto_demandado = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True, blank=True, related_name='rodadas_demandadas')
+    produto_demandado = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True, blank=True)
     quantidade_demandada = models.PositiveIntegerField(null=True, blank=True)
-    
     destino_demanda = models.CharField(max_length=100, null=True, blank=True)
-    preco_maximo_aceitavel = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) # Opcional: se o "comprador" tem um teto
-
-    decisao_jogadores = models.JSONField(default=dict)
-    resultados = models.JSONField(default=dict)  # Armazenará o resultado da rodada (ranking, custos, etc.)
     
-    decisao_jogadores = models.JSONField(default=dict)
-    resultados = models.JSONField(default=dict)  # Armazenará o resultado da rodada (ranking, custos, etc.)
-
+    resultados = models.JSONField(default=dict, blank=True)
     class Meta:
         ordering = ['numero']
+        unique_together = ('partida', 'numero')
 
     def __str__(self):
         return f"Rodada {self.numero} - {self.partida.nome}"

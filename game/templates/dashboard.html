@@ -1,32 +1,63 @@
 {% extends "base.html" %}
 {% load static %}
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock %}
 
-
-{% block title %}Dashboard - Business Game{% endblock %}
+{% block title %}Seu Dashboard{% endblock %}
 
 {% block content %}
-  <h2 style="text-align: center;">Olá, {{ usuario.username }}</h2>
+<div class="container">
+    <h1 class="main-title">Seu Dashboard, {{ user.username }}!</h1>
+    <p>Acompanhe aqui o status das suas partidas.</p>
+    <hr>
 
-  <div class="dashboard-grid">
-    <div class="card">
-      <h3>Minhas Partidas</h3>
-      <p>Você participou de <strong>3</strong> partidas até agora.</p>
-      <a href="{% url 'lobby' %}"><button>Ver Lobby</button></a>
-    </div>
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-    <div class="card">
-      <h3>Última Rodada</h3>
-      <p>Aguardando nova rodada ou decisão do administrador.</p>
-      <button disabled>Acompanhar</button>
-    </div>
+    {% for info in info_partidas_jogador %}
+        <div class="partida-card">
+            <div class="partida-header">
+                <h3>{{ info.partida.nome }}</h3>
+                <span class="saldo">Seu Saldo: R$ {{ info.jogador_partida.saldo|floatformat:2 }}</span>
+            </div>
+            <div class="partida-body">
+                {% if info.rodada_ativa %}
+                    <h4>Rodada {{ info.rodada_ativa.numero }} em andamento</h4>
+                    <div class="demanda-info">
+                        <strong>Demanda do Mercado:</strong> 
+                        {% if info.rodada_ativa.produto_demandado %}
+                            <span>{{ info.rodada_ativa.quantidade_demandada }}x {{ info.rodada_ativa.produto_demandado.nome }} para {{ info.rodada_ativa.destino_demanda }}</span>
+                        {% else %}
+                            <span class="text-warning">Aguardando definição do admin.</span>
+                        {% endif %}
+                    </div>
 
-    <div class="card">
-      <h3>Ranking (em breve)</h3>
-      <p>Classificação geral dos jogadores será exibida aqui.</p>
-      <button disabled>Ver Ranking</button>
-    </div>
-  </div>
+                    <h5>Seu Estoque:</h5>
+                    <ul>
+                    {% for estoque in info.estoques %}
+                        <li>{{ estoque.produto.nome }}: {{ estoque.quantidade }} unidades</li>
+                    {% empty %}
+                        <li>Você não possui itens em estoque.</li>
+                    {% endfor %}
+                    </ul>
+
+                    <div class="partida-actions">
+                        {% if info.decisao_feita %}
+                            <p class="text-success"><strong>Sua decisão para esta rodada já foi enviada!</strong> Aguardando os outros jogadores.</p>
+                        {% else %}
+                            <a href="{% url 'tomar_decisao' info.rodada_ativa.id %}" class="btn btn-primary">Tomar Decisão para a Rodada</a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-info">Aguardando o início da próxima rodada pelo administrador.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p>Você ainda não está participando de nenhuma partida.</p>
+    {% endfor %}
+</div>
 {% endblock %}

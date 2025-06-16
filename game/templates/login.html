@@ -3,13 +3,8 @@
 {% block styles %}
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
 {% endblock %}
-
-
 {% block title %}Login - Business Game{% endblock %}
-
 {% block content %}
-
-
 <!-- <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,7 +106,10 @@
       });
     });
   </script>
+
+  <div class="login-footer">
+      <p>Não tem uma conta? <a href="{% url 'register' %}">Cadastre-se</a></p>
+  </div>
+
 {% endblock %}
-
-
 </html>

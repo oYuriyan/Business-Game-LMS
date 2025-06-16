@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Nova Partida{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="main-title">Criar Nova Partida</h1>
+    <p>Dê um nome para o novo jogo que será iniciado.</p>
+    <hr>
+
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_nome_partida">Nome da Partida:</label>
+            <input type="text" name="nome_partida" id="id_nome_partida" required>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'painel_admin' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-success">Criar Partida</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

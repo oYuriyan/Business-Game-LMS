@@ -1,49 +1,38 @@
 {% extends "base.html" %}
-{% load static %}
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-  <link rel="stylesheet" href="{% static 'css/lobby.css' %}">
-{% endblock %}
 
-{% block title %}Lobby - Business Game{% endblock %}
+{% block title %}Lobby de Partidas{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center;">Bem-vindo ao Lobby, {{ usuario.username }}</h2>
+<div class="container">
+    <h1 class="main-title">Lobby</h1>
+    <p>Veja as partidas disponíveis e entre em uma para começar a jogar.</p>
+    <hr>
 
-<div class="orbita-container">
-  <div class="circulo">
-    <div class="icone" style="--i:0;"><img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" alt="User"></div>
-    <div class="icone" style="--i:1;"><img src="https://cdn-icons-png.flaticon.com/512/888/888879.png" alt="Target"></div>
-    <div class="icone" style="--i:2;"><img src="https://cdn-icons-png.flaticon.com/512/1828/1828490.png" alt="Star"></div>
-    <div class="icone" style="--i:3;"><img src="https://cdn-icons-png.flaticon.com/512/709/709496.png" alt="Chat"></div>
-  </div>
-</div>
-
-<div style="text-align: center;">
-  <a href="{% url 'dashboard' %}">
-    <button>Voltar ao Dashboard</button>
-  </a>
-</div>
-
-  <h3>Partidas disponíveis</h3>
-  <ul>
-    {% for partida in partidas %}
-      <li>
-        {{ partida.nome }} 
-        <button>Entrar</button>
-      </li>
+    <div class="partidas-list">
+    {% for partida in partidas_disponiveis %}
+        <div class="partida-card">
+            <div class="partida-header">
+                <h3>{{ partida.nome }}</h3>
+                <span>Criada por: {{ partida.admin.username }}</span>
+            </div>
+            <div class="partida-body">
+                <p>Status: {{ partida.status|default:"Aguardando Jogadores" }}</p>
+                <div class="partida-actions">
+                    {% if partida.id in partidas_do_jogador %}
+                        <p class="text-success"><strong>Você já está nesta partida!</strong></p>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Ir para o Dashboard</a>
+                    {% else %}
+                        <form action="{% url 'entrar_partida' partida.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Entrar na Partida</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     {% empty %}
-      <li>Nenhuma partida disponível</li>
+        <p>Nenhuma partida disponível no momento. Peça para o administrador criar uma.</p>
     {% endfor %}
-  </ul>
-
-  <hr>
-
-  <h3>Criar nova partida</h3>
-  <form method="POST">
-    {% csrf_token %}
-    <input type="text" name="nome_partida" placeholder="Nome da partida" required>
-    <button type="submit">Criar</button>
-  </form>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Tomar Decisão{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Decisão para a Rodada {{ rodada.numero }}</h1>
+    <h2>Partida: {{ rodada.partida.nome }}</h2>
+    <hr>
+    <p>Seu Saldo Atual: <strong>R$ {{ saldo|floatformat:2 }}</strong></p>
+    <div class="demanda-info">
+        <h3>Demanda do Mercado</h3>
+        <p>Produto: <strong>{{ rodada.produto_demandado.nome }}</strong></p>
+        <p>Quantidade Demandada: <strong>{{ rodada.quantidade_demandada }} unidades</strong></p>
+        <p>Destino: <strong>{{ rodada.destino_demanda }}</strong></p>
+        <p><small>Custo de Produção Unitário: R$ {{ rodada.produto_demandado.custo_producao_unitario|floatformat:2 }}</small></p>
+    </div>
+    <hr>
+    <form method="post" class="styled-form">
+        <h3>Sua Estratégia</h3>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="quantidade_produzida">Quanto você vai produzir deste item nesta rodada?</label>
+            <input type="number" name="quantidade_produzida" min="0" required class="form-control">
+            <small>Este valor será adicionado ao seu estoque e o custo será deduzido do seu saldo.</small>
+        </div>
+        <div class="form-group">
+            <label for="preco_unitario">A que preço você vai ofertar este produto?</label>
+            <input type="number" name="preco_unitario" step="0.01" min="0.01" required class="form-control">
+            <small>O mercado comprará de quem tiver o menor preço.</small>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-success">Confirmar Decisão</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

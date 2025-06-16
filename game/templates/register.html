@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cadastro de Novo Jogador{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-box">
+        <h2>Criar Conta</h2>
+        <p>Cadastre-se para entrar no jogo.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="username">Usuário</label>
+                <input type="text" name="username" id="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Senha</label>
+                <input type="password" name="password" id="password" required>
+            </div>
+            <div class="input-group">
+                <label for="password_confirmation">Confirmar Senha</label>
+                <input type="password" name="password_confirmation" id="password_confirmation" required>
+            </div>
+            <button type="submit" class="btn-login">Cadastrar</button>
+        </form>
+        <div class="login-footer">
+            <p>Já tem uma conta? <a href="{% url 'login' %}">Faça o login</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

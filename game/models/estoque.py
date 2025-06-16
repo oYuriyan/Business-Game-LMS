@@ -8,7 +8,7 @@ class EstoqueJogador(models.Model):
     quantidade = models.PositiveIntegerField(default=0)
     
     class Meta:
-        unique_together = ('jogador_partida', 'produto') # Garante um estoque por produto para cada jogador na partida
+        unique_together = ('jogador_partida', 'produto')
 
     def __str__(self):
         return f"Estoque de {self.produto.nome} para {self.jogador_partida.jogador.username} na partida {self.jogador_partida.partida.nome}: {self.quantidade}"

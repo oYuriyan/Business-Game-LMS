@@ -8,7 +8,7 @@ from .produtos import Produto
 class Decisao(models.Model):
     jogador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='decisoes_jogador')
     partida = models.ForeignKey(Partida, on_delete=models.CASCADE, related_name='decisoes_partida')
-    rodada = models.ForeignKey(Rodada, on_delete=models.CASCADE, related_name='decisoes')
+    rodada = models.ForeignKey(Rodada, on_delete=models.CASCADE, related_name='decisoes_rodada')
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)  # Ex: 'cafeteira', 'torradeira'
     quantidade_produzida = models.PositiveIntegerField()
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
