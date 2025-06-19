@@ -38,7 +38,16 @@
                     <h5>Seu Estoque:</h5>
                     <ul>
                     {% for estoque in info.estoques %}
-                        <li>{{ estoque.produto.nome }}: {{ estoque.quantidade }} unidades</li>
+                        <li>
+                            {{ estoque.produto.nome }}: {{ estoque.quantidade }} unidades
+                            
+                            {% if estoque.quantidade == 0 %}
+                                <form action="{% url 'reabastecer_estoque' estoque.id %}" method="post" style="display: inline; margin-left: 10px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning btn-sm">Reabastecer (Custo: R$ 5000)</button>
+                                </form>
+                            {% endif %} 
+                        </li>
                     {% empty %}
                         <li>Você não possui itens em estoque.</li>
                     {% endfor %}
@@ -52,7 +61,16 @@
                         {% endif %}
                     </div>
                 {% else %}
-                    <p class="text-info">Aguardando o início da próxima rodada pelo administrador.</p>
+                    {% with ultima_rodada=info.partida.rodadas.last %}
+                        {% if ultima_rodada %}
+                            <p class="text-info">A rodada {{ ultima_rodada.numero }} foi processada! Aguardando o administrador iniciar a próxima.</p>
+                            <div class="partida-actions">
+                                <a href="{% url 'resultados_rodada' ultima_rodada.id %}" class="btn btn-info">Ver Resultados da Rodada {{ ultima_rodada.numero }}</a>
+                            </div>
+                        {% else %}
+                            <p class="text-info">Você entrou na partida! Aguardando o administrador iniciar a primeira rodada.</p>
+                        {% endif %}
+                    {% endwith %}
                 {% endif %}
             </div>
         </div>

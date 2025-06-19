@@ -4,27 +4,38 @@
 {% block title %}Definir Demanda da Rodada {{ rodada.numero }}{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center;">Definir Demanda para Rodada {{ rodada.numero }} - Partida: {{ rodada.partida.nome }}</h2>
+<div class="container">
+    <h2 style="text-align: center;">Definir Demanda para Rodada {{ rodada.numero }} - Partida: {{ rodada.partida.nome }}</h2>
 
-<form method="POST">
-    {% csrf_token %}
-    <label for="produto_demandado">Produto Demandado:</label>
-    <select name="produto_demandado" id="produto_demandado" required>
-        <option value="">--- Selecione um Produto ---</option>
-        {% for produto_disp in produtos_disponiveis %}
-        <option value="{{ produto_disp.id }}" {% if rodada.produto_demandado == produto_disp %}selected{% endif %}>
-            {{ produto_disp.nome }}
-        </option>
-        {% endfor %}
-    </select><br><br>
+    <form method="POST" class="styled-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_produto">Produto Demandado:</label>
+            <select name="produto_id" id="id_produto" required>
+                <option value="">--- Selecione um Produto ---</option>
+                {% for produto in produtos %}
+                <option value="{{ produto.id }}" {% if rodada.produto_demandado_id == produto.id %}selected{% endif %}>
+                    {{ produto.nome }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <label for="quantidade_demandada">Quantidade Demandada:</label>
-    <input type="number" name="quantidade_demandada" id="quantidade_demandada" value="{{ rodada.quantidade_demandada|default:'' }}" required><br><br>
+        <div class="form-group">
+            <label for="id_quantidade">Quantidade Demandada:</label>
+            <input type="number" name="quantidade" id="id_quantidade" value="{{ rodada.quantidade_demandada|default:'' }}" required>
+        </div>
 
-    <label for="destino_demanda">Destino da Demanda:</label>
-    <input type="text" name="destino_demanda" id="destino_demanda" value="{{ rodada.destino_demanda|default:'' }}" placeholder="Ex: São Paulo" required><br><br>
+        <div class="form-group">
+            <label for="id_destino">Destino da Demanda:</label>
+            <input type="text" name="destino" id="id_destino" value="{{ rodada.destino_demanda|default:'' }}" placeholder="Ex: São Paulo" required>
+        </div>
 
-    <button type="submit">Salvar Demanda</button>
-    <a href="{% url 'admin' %}"><button type="button">Cancelar</button></a>
-</form>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar Demanda</button>
+            <a href="{% url 'painel_admin' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

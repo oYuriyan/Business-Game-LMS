@@ -4,6 +4,7 @@ from .rodada import Rodada
 from .decisao import Decisao
 from .estoque import EstoqueJogador
 from .custotransporte import CustoTransporte
+from .custoproducao import CustoProducao
 
 __all__ = [
     'Partida',
@@ -12,5 +13,6 @@ __all__ = [
     'Rodada',
     'Decisao',
     'EstoqueJogador',
-    'CustoTransporte'
+    'CustoTransporte',
+    'CustoProducao'
 ]

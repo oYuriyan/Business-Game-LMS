@@ -16,6 +16,7 @@ urlpatterns = [
     path('produtos/criar/', produtos.criar_produto, name='criar_produto'),
     path('produtos/editar/<int:produto_id>/', produtos.editar_produto, name='editar_produto'),
     path('produtos/excluir/<int:produto_id>/', produtos.excluir_produto, name='excluir_produto'),
+    path('estoque/<int:estoque_id>/reabastecer/', dashboard.reabastecer_estoque_view, name='reabastecer_estoque'),
 
     #URLs DO ADMIN
     path('admin/painel/', admin_views.painel_admin, name='painel_admin'),
@@ -25,4 +26,5 @@ urlpatterns = [
     #URLs RODADA e PARTIDA
     path('partida/<int:partida_id>/entrar/', dashboard.entrar_partida_view, name='entrar_partida'),
     path('rodada/<int:rodada_id>/decidir/', dashboard.tomar_decisao_view, name='tomar_decisao'),
+    path('rodada/<int:rodada_id>/resultados/', dashboard.resultados_rodada_view, name='resultados_rodada'),
 ]

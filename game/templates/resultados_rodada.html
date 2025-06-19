@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Resultados da Rodada {{ rodada.numero }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="main-title">Resultados da Rodada {{ rodada.numero }}</h1>
+    <h2 class="sub-title">Partida: {{ rodada.partida.nome }}</h2>
+    <hr>
+
+    <div class="card">
+        <h3>Demanda do Mercado</h3>
+        <p>O mercado buscou por <strong>{{ resultados.demanda.quantidade }}</strong> unidades de <strong>{{ resultados.demanda.produto }}</strong> com destino a <strong>{{ resultados.demanda.destino }}</strong>.</p>
+    </div>
+
+    <div class="card">
+        <h3>Ofertas da Rodada</h3>
+        <p>Para manter o sigilo, apenas os preços ofertados são públicos.</p>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>Preço Ofertado por Unidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for oferta in resultados.ofertas %}
+                <tr>
+                    <td>{{ oferta.empresa }}</td>
+                    <td>R$ {{ oferta.preco_ofertado|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Vencedor(es) da Rodada</h3>
+        {% for venda in resultados.vendas_realizadas %}
+            <p>A <strong>{{ venda.empresa }}</strong> vendeu <strong>{{ venda.quantidade }}</strong> unidades ao preço de R$ {{ venda.preco_unitario|floatformat:2 }}.</p>
+        {% empty %}
+            <p>Nenhuma venda foi realizada nesta rodada.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Seu Desempenho na Rodada</h3>
+        <p>Estas informações são visíveis apenas para você.</p>
+        {% for jogador_final in resultados.estado_final_jogadores %}
+            {% if jogador_final.jogador == user.username %}
+                <p><strong>Seu Saldo Final:</strong> R$ {{ jogador_final.saldo_final|floatformat:2 }}</p>
+                {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div class="form-actions" style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">Voltar para o Dashboard</a>
+    </div>
+
+</div>
+{% endblock %}

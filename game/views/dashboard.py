@@ -117,4 +117,56 @@ def tomar_decisao_view(request, rodada_id):
         'rodada': rodada,
         'saldo': jogador_partida.saldo
     }
-    return render(request, 'tomar_decisao.html', context)
+    return render(request, 'decisao.html', context)
+
+@login_required
+def resultados_rodada_view(request, rodada_id):
+    rodada = get_object_or_404(Rodada, id=rodada_id)
+    # Garante que o jogador pertence à partida desta rodada
+    get_object_or_404(JogadorPartida, partida=rodada.partida, jogador=request.user)
+    
+    # Busca todas as decisões daquela rodada para mostrar o "pregão"
+    decisoes_da_rodada = Decisao.objects.filter(rodada=rodada).select_related('jogador', 'produto').order_by('preco_unitario')
+    
+    # Os resultados já foram calculados e salvos no campo JSON da rodada
+    resultados = rodada.resultados
+    
+    context = {
+        'rodada': rodada,
+        'decisoes': decisoes_da_rodada,
+        'resultados': resultados
+    }
+    
+    return render(request, 'resultados_rodada.html', context)
+
+@login_required
+def reabastecer_estoque_view(request, estoque_id):
+    # Garante que a ação seja feita por um POST para segurança
+    if request.method == 'POST':
+        estoque = get_object_or_404(EstoqueJogador, id=estoque_id)
+        jogador_partida = estoque.jogador_partida
+
+        # Verifica se o jogador logado é o dono deste estoque
+        if jogador_partida.jogador != request.user:
+            messages.error(request, "Você não tem permissão para realizar esta ação.")
+            return redirect('dashboard')
+
+        # --- REGRAS DE NEGÓCIO ---
+        CUSTO_REABASTECIMENTO = Decimal('5000.00')
+        QUANTIDADE_REABASTECIDA = 100 # Estoque volta para 100 unidades
+
+        if estoque.quantidade > 0:
+            messages.warning(request, "Você só pode reabastecer itens com estoque zerado.")
+        elif jogador_partida.saldo < CUSTO_REABASTECIMENTO:
+            messages.error(request, f"Saldo insuficiente. Você precisa de R$ {CUSTO_REABASTECIMENTO} para reabastecer.")
+        else:
+            jogador_partida.saldo -= CUSTO_REABASTECIMENTO
+            estoque.quantidade = QUANTIDADE_REABASTECIDA
+            
+            jogador_partida.save()
+            estoque.save()
+            
+            messages.success(request, f"Estoque de {estoque.produto.nome} reabastecido com sucesso!")
+    
+    # Redireciona de volta para o dashboard em qualquer caso
+    return redirect('dashboard')
