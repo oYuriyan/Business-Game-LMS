@@ -15,6 +15,7 @@ class Partida(models.Model):
     data_inicio = models.DateTimeField(default=timezone.now)
     data_fim = models.DateTimeField(null=True, blank=True)
     max_rodadas = models.PositiveIntegerField(default=7, help_text="Número máximo de rodadas para a partida.")
+    avanco_automatico = models.BooleanField(default=False, help_text="Se verdadeiro, a rodada avança assim que o último jogador decide.")
     # Relacionamento com usuários (jogadores)
     jogadores = models.ManyToManyField(User, through='JogadorPartida')
 

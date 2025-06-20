@@ -55,6 +55,7 @@
                             Nenhum jogador inscrito.
                         {% endfor %}
                     </p>
+                    <p><strong>Status:</strong> <span class="status-{{ info.partida.status|lower }}">{{ info.partida.get_status_display }}</span></p>
 
                     {% if info.rodada_ativa %}
                         <p><strong>Rodada Ativa: {{ info.rodada_ativa.numero }}</strong></p>
@@ -66,43 +67,45 @@
                                 <span class="text-danger">Aguardando definição</span>
                             {% endif %}
                         </p>
-                        <div class="partida-body">
-                            <p><strong>Status:</strong> <span class="status-{{ info.partida.status|lower }}">{{ info.partida.get_status_display }}</span></p>
-                            
-                            <div class="partida-actions">
-                                {% if info.partida.status != 'FINALIZADA' %}
-                                    {% if info.rodada_ativa %}
-                                        <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="btn btn-secondary">Definir Demanda</a>
-                                        
-                                        <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-primary">Processar e Avançar</button>
-                                        </form>
-                                    {% else %}
-                                        <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-success">Iniciar Primeira Rodada</button>
-                                        </form>
-                                    {% endif %}
-
-                                    <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="action-form" onsubmit="return confirm('Tem certeza que deseja finalizar esta partida?');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger">Finalizar Partida</button>
-                                    </form>
-                                    
-                                {% else %}
-                                    <p class="text-muted">Esta partida foi concluída em {{ info.partida.data_fim|date:"d/m/Y" }}.</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% else %}
-                        <p class="text-warning">Partida não iniciada.</p>
-                        <div class="partida-actions">
-                             <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
+                    {% endif %}
+                </div>''
+                <div class="partida-actions">
+                    {% if info.partida.status != 'FINALIZADA' %}
+                        <a href="{% url 'admin_spectator_view' info.partida.id %}" class="btn btn-info">Ver como Espectador</a>
+                        
+                        {% if info.rodada_ativa %}
+                            <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="btn btn-secondary">Definir Demanda</a>
+                            <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-success">Iniciar Primeira Rodada</button>
+                                <button type="submit" class="btn btn-primary">Processar e Avançar</button>
                             </form>
-                        </div>
+                        {% else %}
+                            {% if info.jogadores.count >= 2 %}
+                                <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success">Iniciar Primeira Rodada</button>
+                                </form>
+                                <form action="{% url 'toggle_avanco_automatico' info.partida.id %}" method="post" class="action-form">
+                                    {% csrf_token %}
+                                    {% if info.partida.avanco_automatico %}
+                                        <button type="submit" class="btn btn-warning">Desligar Avanço Automático</button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-info">Ligar Avanço Automático</button>
+                                    {% endif %}
+                                </form>
+                            {% else %}
+                                <button type="button" class="btn btn-success" disabled title="É necessário ter no mínimo 2 jogadores para iniciar.">Iniciar Primeira Rodada</button>
+                                <small class="text-muted d-block mt-1">Mínimo de 2 jogadores requerido.</small>
+                            {% endif %}
+                        {% endif %}
+
+                        <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="action-form" onsubmit="return confirm('Tem certeza que deseja finalizar esta partida?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Finalizar Partida</button>
+                        </form>
+
+                    {% else %}
+                        <p class="text-muted">Esta partida foi concluída em {{ info.partida.data_fim|date:"d/m/Y" }}.</p>
                     {% endif %}
                 </div>
             </div>

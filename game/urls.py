@@ -17,8 +17,10 @@ urlpatterns = [
 
     #URLs DO ADMIN
     path('painel/', admin_views.painel_admin, name='painel_admin'),
+    path('painel/partida/<int:partida_id>/espectador/', admin_views.admin_partida_spectator_view, name='admin_spectator_view'),
     path('painel/partida/criar/', admin_views.criar_partida_view, name='criar_partida'),
     path('painel/partida/<int:partida_id>/avancar/', admin_views.avancar_rodada_view, name='avancar_rodada'),
+    path('painel/partida/<int:partida_id>/toggle_auto_advance/', admin_views.toggle_avanco_automatico_view, name='toggle_avanco_automatico'),
     path('painel/partida/<int:partida_id>/finalizar/', admin_views.finalizar_partida_view, name='finalizar_partida'),
     path('painel/rodada/<int:rodada_id>/demanda/', admin_views.definir_demanda_view, name='definir_demanda'),
     #URLs RODADA e PARTIDA

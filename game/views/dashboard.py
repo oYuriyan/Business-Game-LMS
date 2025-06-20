@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from game.models import JogadorPartida, Rodada, Unidade, Decisao, Partida, Produto
+from game.models import JogadorPartida, Rodada, Unidade, Decisao, Partida, Produto, CustoProducao, CustoTransporte
+from game.services.controle_rodada import avancar_rodada as avancar_rodada_service, todos_jogadores_decidiram
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
@@ -9,7 +10,9 @@ from decimal import Decimal
 @login_required
 def dashboard_view(request):
     # Encontra todas as associações de partida para o jogador logado
-    jogador_partidas = JogadorPartida.objects.filter(jogador=request.user).select_related('partida')
+    jogador_partidas = JogadorPartida.objects.filter(
+        jogador=request.user
+    ).exclude(partida__status='FINALIZADA').select_related('partida')
     
     info_partidas_jogador = []
     for jp in jogador_partidas:
@@ -36,10 +39,7 @@ def dashboard_view(request):
 
 @login_required
 def lobby_view(request):
-    # Busca todas as partidas que ainda não foram finalizadas
     partidas_disponiveis = Partida.objects.exclude(status='FINALIZADA').order_by('-data_inicio')
-    
-    # Pega as partidas que o jogador já entrou para o template saber
     partidas_do_jogador = JogadorPartida.objects.filter(jogador=request.user).values_list('partida_id', flat=True)
 
     context = {
@@ -71,11 +71,19 @@ EMPRESAS_SETUP = {
 @login_required
 def entrar_partida_view(request, partida_id):
     partida = get_object_or_404(Partida, id=partida_id)
+    partida_para_entrar = get_object_or_404(Partida, id=partida_id)
+    partidas_ativas_do_jogador = JogadorPartida.objects.filter(
+        jogador=request.user
+    ).exclude(partida__status='FINALIZADA').exclude(partida=partida_para_entrar)
+
+    if partidas_ativas_do_jogador.exists():
+        messages.error(request, 'Você já está em uma partida ativa. Saia da partida atual para poder entrar em uma nova.')
+        return redirect('lobby')
     
-    if JogadorPartida.objects.filter(partida=partida, jogador=request.user).exists():
+    if JogadorPartida.objects.filter(partida=partida_para_entrar, jogador=request.user).exists():
         messages.warning(request, 'Você já está nesta partida.')
     else:
-        num_jogadores_atual = JogadorPartida.objects.filter(partida=partida).count()
+        num_jogadores_atual = JogadorPartida.objects.filter(partida=partida_para_entrar).count()
         empresas_disponiveis = ['Empresa A', 'Empresa B', 'Empresa C', 'Empresa D']
         
         if num_jogadores_atual >= len(empresas_disponiveis):
@@ -85,7 +93,7 @@ def entrar_partida_view(request, partida_id):
 
             # Cria a associação JogadorPartida
             jp = JogadorPartida.objects.create(
-                partida=partida, 
+                partida=partida_para_entrar, 
                 jogador=request.user,
                 nome_empresa_jogador=nome_empresa_designada
             )
@@ -106,7 +114,7 @@ def entrar_partida_view(request, partida_id):
                     except Produto.DoesNotExist:
                         messages.error(request, f"O produto base '{nome_produto}' não foi encontrado no sistema.")
             
-            messages.success(request, f'Você entrou na partida "{partida.nome}" como {nome_empresa_designada}!')
+            messages.success(request, f'Você entrou na partida "{partida_para_entrar.nome}" como {nome_empresa_designada}!')
     
     return redirect('dashboard')
 
@@ -116,7 +124,7 @@ def partida_detalhe_view(request, partida_id):
     jogador_partida = get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
     rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
 
-    # Lógica de tomada de decisão
+    # Lógica de tomada de decisão (o seu código, com o redirect corrigido)
     if request.method == 'POST' and rodada_ativa:
         try:
             unidade_id = request.POST.get('unidade_origem_id')
@@ -136,6 +144,12 @@ def partida_detalhe_view(request, partida_id):
                         quantidade_produzida=qtd_produzida, preco_unitario=preco_venda
                     )
                     messages.success(request, "Sua decisão para a rodada foi registrada com sucesso!")
+                    partida.refresh_from_db() 
+                    if partida.avanco_automatico:
+                        # Re-checa se todos decidiram apos a decisão atual ser salva.
+                        if todos_jogadores_decidiram(rodada_ativa):
+                            messages.info(request, "Todos os jogadores decidiram. A rodada será avançada automaticamente.")
+                            avancar_rodada_service(partida)
                     return redirect('partida_detalhe', partida_id=partida.id)
         except (ValueError, TypeError):
             messages.error(request, "Por favor, insira valores válidos.")
@@ -150,6 +164,17 @@ def partida_detalhe_view(request, partida_id):
     
     ultima_rodada_finalizada = Rodada.objects.filter(partida=partida, ativo=False).order_by('-numero').first()
 
+    nome_empresa = jogador_partida.nome_empresa_jogador
+    custos_producao = CustoProducao.objects.filter(nome_empresa_template=nome_empresa).order_by('produto__nome')
+    custos_transporte_raw = CustoTransporte.objects.filter(nome_empresa_template=nome_empresa).order_by('cd_origem', 'local_destino')
+
+    # Agrupando custos de transporte por unidade de origem para exibição limpa
+    custos_transporte_agrupados = {}
+    for custo in custos_transporte_raw:
+        if custo.cd_origem not in custos_transporte_agrupados:
+            custos_transporte_agrupados[custo.cd_origem] = []
+        custos_transporte_agrupados[custo.cd_origem].append(custo)
+    
     context = {
         'partida': partida,
         'jogador_partida': jogador_partida,
@@ -158,6 +183,8 @@ def partida_detalhe_view(request, partida_id):
         'decisao_feita': decisao_feita,
         'unidades_para_decisao': unidades_para_decisao,
         'ultima_rodada_finalizada': ultima_rodada_finalizada,
+        'custos_producao': custos_producao,
+        'custos_transporte': custos_transporte_agrupados,
     }
     return render(request, 'partida_detalhe.html', context)
 

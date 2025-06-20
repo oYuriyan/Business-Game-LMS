@@ -1,10 +1,8 @@
-# Em: game/views/admin.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.utils import timezone
-from game.models import Partida, Rodada, JogadorPartida, Produto
+from game.models import Partida, Rodada, JogadorPartida, Produto, CustoTransporte, CustoProducao, Unidade, Decisao
 from game.services.controle_rodada import avancar_rodada as avancar_rodada_service
 from game.dados_setup import CUSTOS_PRODUCAO_PADRAO, CUSTOS_TRANSPORTE_PADRAO
 from game.models import CustoProducao, CustoTransporte, Produto
@@ -103,14 +101,19 @@ def avancar_rodada_view(request, partida_id):
     if request.method == 'POST':
         partida = get_object_or_404(Partida, id=partida_id)
 
-        # A função de serviço agora cuida de toda a lógica.
+        # Verifica se é a primeira rodada que está para ser iniciada
+        is_first_round = not Rodada.objects.filter(partida=partida).exists()
+        
+        # Se for a primeira rodada, verifica a contagem de jogadores
+        if is_first_round and partida.jogadorpartida_set.count() < 2:
+            messages.error(request, f"Não é possível iniciar a partida '{partida.nome}' com menos de 2 jogadores.")
+            return redirect('painel_admin')
+
+        # Se a verificação passar, a lógica normal continua
         resultado_rodada = avancar_rodada_service(partida)
         
         if resultado_rodada is None:
-            # Se o resultado for None, pode ser por duas razões:
-            # 1. O jogo acabou de ser finalizado.
-            # 2. Nem todos os jogadores tomaram uma decisão.
-            partida.refresh_from_db() # Atualiza o estado da partida do banco
+            partida.refresh_from_db()
             if partida.status == 'FINALIZADA':
                 messages.success(request, f"A última rodada foi processada e a partida '{partida.nome}' foi finalizada!")
             else:
@@ -137,3 +140,43 @@ def finalizar_partida_view(request, partida_id):
         messages.info(request, f"A partida '{partida.nome}' foi finalizada manualmente.")
     
     return redirect('painel_admin')
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_partida_spectator_view(request, partida_id):
+    partida = get_object_or_404(Partida, id=partida_id)
+    rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
+    
+    # Busca todos os jogadores da partida e suas informações
+    jogadores_da_partida = JogadorPartida.objects.filter(partida=partida).order_by('nome_empresa_jogador')
+    
+    # Prepara uma lista com dados detalhados de cada jogador
+    info_jogadores = []
+    for jp in jogadores_da_partida:
+        unidades = Unidade.objects.filter(jogador_partida=jp).order_by('localidade', 'produto__nome')
+        decisao = Decisao.objects.filter(jogador=jp.jogador, rodada=rodada_ativa).first() if rodada_ativa else None
+        
+        info_jogadores.append({
+            'jogador_partida': jp,
+            'unidades': unidades,
+            'decisao_feita': decisao is not None
+        })
+
+    context = {
+        'partida': partida,
+        'rodada_ativa': rodada_ativa,
+        'info_jogadores': info_jogadores
+    }
+    return render(request, 'admin_spectator.html', context)
+@user_passes_test(lambda u: u.is_superuser)
+def toggle_avanco_automatico_view(request, partida_id):
+    if request.method == 'POST':
+        partida = get_object_or_404(Partida, id=partida_id)
+        # Inverte o valor booleano atual
+        partida.avanco_automatico = not partida.avanco_automatico
+        partida.save()
+        
+        status_texto = "ativado" if partida.avanco_automatico else "desativado"
+        messages.success(request, f"Avanço automático de rodada foi {status_texto} para a partida '{partida.nome}'.")
+    
+    return redirect('painel_admin')
+    

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Espectador: {{ partida.nome }}{% endblock %}
+
+{% block content %}
+<style>
+    .spectator-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    .player-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background-color: #fff;
+    }
+    .player-card-header {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .player-card-body {
+        padding: 1rem;
+    }
+    .unidade-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .dark-mode .player-card {
+        background-color: #343a40;
+        border-color: #495057;
+    }
+    .dark-mode .player-card-header {
+        background-color: #495057;
+    }
+</style>
+
+<div class="container">
+    <h1 class="main-title">Visão de Espectador</h1>
+    <h2 class="sub-title">Partida: {{ partida.nome }}</h2>
+    
+    {% if rodada_ativa %}
+        <p><strong>Status:</strong> Rodada {{ rodada_ativa.numero }} em andamento.</p>
+    {% else %}
+        <p><strong>Status:</strong> Aguardando início de rodada ou finalizada.</p>
+    {% endif %}
+    <hr>
+    
+    <div class="spectator-grid">
+        {% for info in info_jogadores %}
+            <div class="player-card">
+                <div class="player-card-header">
+                    <h4>{{ info.jogador_partida.nome_empresa_jogador }}</h4>
+                    <small>Jogador: {{ info.jogador_partida.jogador.username }}</small>
+                </div>
+                <div class="player-card-body">
+                    <p><strong>Saldo:</strong> <span class="text-success">R$ {{ info.jogador_partida.saldo|floatformat:2 }}</span></p>
+                    
+                    {% if rodada_ativa %}
+                        <p><strong>Decisão na Rodada {{ rodada_ativa.numero }}:</strong> 
+                        {% if info.decisao_feita %}
+                            <span class="text-success">Enviada</span>
+                        {% else %}
+                            <span class="text-warning">Aguardando</span>
+                        {% endif %}
+                        </p>
+                    {% endif %}
+                    
+                    <hr>
+                    <strong>Unidades de Estoque:</strong>
+                    <ul class="unidade-list">
+                        {% for unidade in info.unidades %}
+                            <li>{{ unidade.localidade }} - {{ unidade.produto.nome }}: <strong>{{ unidade.quantidade }} un.</strong></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% empty %}
+            <p>Ainda não há jogadores nesta partida.</p>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions" style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'painel_admin' %}" class="btn btn-secondary">Voltar ao Painel Principal</a>
+    </div>
+</div>
+{% endblock %}

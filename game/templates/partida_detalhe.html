@@ -87,6 +87,29 @@
         </div>
 
         <div class="side-panel">
+            <hr>
+            <!-- ADICIONE ESTA NOVA SEÇÃO -->
+            <h4>Sua Tabela de Custos</h4>
+            <div class="custos-info">
+                <strong>Custos de Produção:</strong>
+                <ul>
+                    {% for custo_p in custos_producao %}
+                        <li>{{ custo_p.produto.nome }}: R$ {{ custo_p.custo_unitario|floatformat:2 }}</li>
+                    {% endfor %}
+                </ul>
+
+                <strong>Custos de Transporte (por unidade):</strong>
+                {% for origem, custos_t in custos_transporte.items %}
+                    <div class="unidade-card" style="margin-top: 0.5rem; background-color: #e9ecef;">
+                        <strong>Da {{ origem }}:</strong>
+                        <ul>
+                            {% for custo in custos_t %}
+                                <li>Para {{ custo.local_destino }} ({{ custo.produto.nome }}): R$ {{ custo.custo_unitario_transporte|floatformat:2 }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
             <h3>Seu Status</h3>
             <p><strong>Saldo:</strong> <span class="text-success">R$ {{ jogador_partida.saldo|floatformat:2 }}</span></p>
             <hr>
