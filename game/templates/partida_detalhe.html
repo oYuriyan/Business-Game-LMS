@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ partida.nome }}{% endblock %}
+
+
+{% block content %}
+<style>
+    .game-container { display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; }
+    .main-panel { flex: 3; min-width: 400px; }
+    .side-panel { flex: 1; min-width: 250px; background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; }
+    .dark-mode .side-panel { background-color: #343a40; }
+    .unidade-card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 0.5rem; border-radius: 5px; }
+    .dark-mode .unidade-card { border-color: #555; }
+</style>
+
+<div class="container">
+    <h1 class="main-title">Sala da Partida: {{ partida.nome }}</h1>
+    <p>Bem-vindo, {{ user.username }} ({{ jogador_partida.nome_empresa_jogador }})</p>
+    <hr>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="game-container">
+        <div class="main-panel">
+            {% if rodada_ativa %}
+                <div class="card">
+                    <h3>Rodada {{ rodada_ativa.numero }}: Demanda do Mercado</h3>
+                    {% if rodada_ativa.produto_demandado %}
+                        <p>O mercado busca por <strong>{{ rodada_ativa.quantidade_demandada }}</strong> unidades de <strong>{{ rodada_ativa.produto_demandado.nome }}</strong> para <strong>{{ rodada_ativa.destino_demanda }}</strong>.</p>
+                        
+                        <hr>
+                        
+                        {% if decisao_feita %}
+                            <p class="text-success"><strong>Sua decisão para esta rodada foi enviada!</strong> Aguarde o processamento pelo administrador.</p>
+                        {% else %}
+                            <form method="post" class="styled-form">
+                                <h4>Sua Jogada</h4>
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="id_unidade_origem">Escolha a Unidade de Origem:</label>
+                                    <select name="unidade_origem_id" id="id_unidade_origem" required class="form-control">
+                                        <option value="">--- Estoque | Local ---</option>
+                                        {% for unidade in unidades_para_decisao %}
+                                        <option value="{{ unidade.id }}">
+                                            {{ unidade.quantidade }} un. | {{ unidade.localidade }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="quantidade_produzida">Produção Adicional:</label>
+                                    <input type="number" name="quantidade_produzida" min="0" value="0" required class="form-control">
+                                    <small>O custo será debitado e a produção adicionada ao estoque da unidade escolhida.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="preco_unitario">Preço de Venda por Unidade:</label>
+                                    <input type="number" name="preco_unitario" step="0.01" min="0.01" required class="form-control">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-success">Confirmar Decisão</button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-warning">Aguardando o administrador definir a demanda para a rodada.</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="card">
+                    <h3>Aguardando Próxima Rodada</h3>
+                    <p>O administrador ainda não iniciou a próxima rodada.</p>
+                </div>
+            {% endif %}
+
+            {% if ultima_rodada_finalizada %}
+                <div class="partida-actions" style="margin-top: 1rem;">
+                    <a href="{% url 'resultados_rodada' ultima_rodada_finalizada.id %}" class="btn btn-info">Ver Resultados da Última Rodada (Rodada {{ ultima_rodada_finalizada.numero }})</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="side-panel">
+            <h3>Seu Status</h3>
+            <p><strong>Saldo:</strong> <span class="text-success">R$ {{ jogador_partida.saldo|floatformat:2 }}</span></p>
+            <hr>
+            <h4>Suas Unidades e Estoques</h4>
+            {% for unidade in unidades_do_jogador %}
+                <div class="unidade-card">
+                    <strong>{{ unidade.localidade }}</strong><br>
+                    <small>{{ unidade.produto.nome }}: {{ unidade.quantidade }} un.</small>
+                </div>
+            {% empty %}
+                <p>Você ainda não possui unidades de estoque.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pega o ID da partida que está no contexto do template
+        const partidaId = {{ partida.id }};
+        const apiUrl = `/api/partida/${partidaId}/state/`;
+
+        // Função que atualiza a página com os novos dados
+        function updatePage(data) {
+            // Atualiza o saldo
+            const saldoElement = document.querySelector('.side-panel .text-success');
+            if (saldoElement) {
+                // Converte para número e formata para ter duas casas decimais
+                const saldoFormatado = Number(data.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                saldoElement.textContent = saldoFormatado;
+            }
+
+            // Atualiza a informação da rodada e demanda
+            const demandaContainer = document.querySelector('.main-panel .card'); // Container geral
+            if (demandaContainer && data.rodada_ativa) {
+                const demandaTexto = demandaContainer.querySelector('p strong');
+                if(demandaTexto && data.rodada_ativa.demanda_produto) {
+                    demandaTexto.parentElement.innerHTML = `O mercado busca por <strong>${data.rodada_ativa.demanda_quantidade}</strong> unidades de <strong>${data.rodada_ativa.demanda_produto}</strong> para <strong>${data.rodada_ativa.demanda_destino}</strong>.`;
+                }
+            }
+            
+            // Lógica para recarregar a página se uma nova rodada começar
+            const rodadaAtualNaPagina = document.querySelector('.main-panel .card h3');
+            if (rodadaAtualNaPagina) {
+                const rodadaAtualNumero = parseInt(rodadaAtualNaPagina.textContent.replace('Rodada ', '').split(':')[0]);
+                if (data.rodada_ativa && rodadaAtualNumero !== data.rodada_ativa.numero) {
+                    console.log('Nova rodada detectada! Recarregando...');
+                    window.location.reload();
+                }
+            } else if (data.rodada_ativa) {
+                // Caso a página estivesse mostrando "Aguardando próxima rodada" e uma nova começou
+                console.log('Nova rodada iniciada! Recarregando...');
+                window.location.reload();
+            }
+        }
+
+        // Função que busca os dados no servidor
+        async function fetchGameState() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    console.error('Erro ao buscar estado do jogo.');
+                    return;
+                }
+                const data = await response.json();
+                updatePage(data);
+            } catch (error) {
+                console.error('Falha na requisição:', error);
+            }
+        }
+
+        // Inicia o "polling": busca os dados a cada 2 segundos
+        setInterval(fetchGameState, 2000); // 2000 ms = 2 segundos
+    });
+</script>
+{% endblock %}

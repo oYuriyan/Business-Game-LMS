@@ -49,6 +49,18 @@
     <h1 class="main-title">Decisão Estratégica - Rodada {{ rodada.numero }}</h1>
     <h2 class="sub-title">Partida: {{ rodada.partida.nome }}</h2>
     <hr>
+    <div class="form-group">
+        <label for="id_unidade_origem">Unidade de Origem (CD/Fábrica):</label>
+        <select name="unidade_origem_id" id="id_unidade_origem" required class="form-control">
+            <option value="">--- Selecione de onde vai jogar ---</option>
+            {% for unidade in unidades %}
+            <option value="{{ unidade.id }}">
+                {{ unidade.localidade }} (Estoque Atual: {{ unidade.quantidade }})
+            </option>
+            {% endfor %}
+        </select>
+        <small>A unidade escolhida definirá seu custo de transporte e de onde o estoque será debitado.</small>
+    </div>
 
     <div class="decision-container">
         <!-- Coluna da Esquerda: Informações de Apoio -->

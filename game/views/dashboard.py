@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from game.models import JogadorPartida, Rodada, EstoqueJogador, Decisao, Partida
+from django.http import JsonResponse
+from game.models import JogadorPartida, Rodada, Unidade, Decisao, Partida, Produto
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
@@ -13,7 +14,7 @@ def dashboard_view(request):
     info_partidas_jogador = []
     for jp in jogador_partidas:
         rodada_ativa = Rodada.objects.filter(partida=jp.partida, ativo=True).first()
-        estoques = EstoqueJogador.objects.filter(jogador_partida=jp).select_related('produto')
+        estoques = Unidade.objects.filter(jogador_partida=jp).select_related('produto')
         
         # Verifica se o jogador já tomou uma decisão para a rodada ativa
         decisao_feita = False
@@ -47,77 +48,118 @@ def lobby_view(request):
     }
     return render(request, 'lobby.html', context)
 
+# Dados das tabelas para o setup inicial das empresas
+EMPRESAS_SETUP = {
+    'Empresa A': {
+        'Cafeteira': {'Unidade 1': 100, 'Unidade 2': 80, 'Unidade 3': 50},
+        'Torradeira': {'Unidade 1': 80, 'Unidade 2': 50, 'Unidade 3': 40},
+    },
+    'Empresa B': {
+        'Cafeteira': {'Unidade 1': 100, 'Unidade 2': 80, 'Unidade 3': 50},
+        'Torradeira': {'Unidade 1': 80, 'Unidade 2': 50, 'Unidade 3': 40},
+    },
+    'Empresa C': {
+        'Cafeteira': {'Unidade 1': 100, 'Unidade 2': 80, 'Unidade 3': 50},
+        'Torradeira': {'Unidade 1': 80, 'Unidade 2': 50, 'Unidade 3': 40},
+    },
+    'Empresa D': {
+        'Cafeteira': {'Unidade 1': 100, 'Unidade 2': 80, 'Unidade 3': 50},
+        'Torradeira': {'Unidade 1': 80, 'Unidade 2': 50, 'Unidade 3': 40},
+    }
+}
+
 @login_required
 def entrar_partida_view(request, partida_id):
     partida = get_object_or_404(Partida, id=partida_id)
     
-    # Evita que o jogador entre na mesma partida duas vezes
     if JogadorPartida.objects.filter(partida=partida, jogador=request.user).exists():
         messages.warning(request, 'Você já está nesta partida.')
     else:
-        # Lógica para atribuir uma "Empresa" ao jogador (A, B, C, D)
         num_jogadores_atual = JogadorPartida.objects.filter(partida=partida).count()
-        empresas = [
-            {'nome': 'Empresa A', 'cd': 'CD Sao Paulo'},
-            {'nome': 'Empresa B', 'cd': 'CD Rio de Janeiro'},
-            {'nome': 'Empresa C', 'cd': 'CD Belo Horizonte'},
-            {'nome': 'Empresa D', 'cd': 'CD Curitiba'},
-        ]
+        empresas_disponiveis = ['Empresa A', 'Empresa B', 'Empresa C', 'Empresa D']
         
-        if num_jogadores_atual >= len(empresas):
+        if num_jogadores_atual >= len(empresas_disponiveis):
             messages.error(request, 'Esta partida já está cheia.')
         else:
-            empresa_designada = empresas[num_jogadores_atual]
+            nome_empresa_designada = empresas_disponiveis[num_jogadores_atual]
 
-            JogadorPartida.objects.create(
+            # Cria a associação JogadorPartida
+            jp = JogadorPartida.objects.create(
                 partida=partida, 
                 jogador=request.user,
-                nome_empresa_jogador=empresa_designada['nome'],
-                cd_origem_principal_jogador=empresa_designada['cd']
+                nome_empresa_jogador=nome_empresa_designada
             )
-            messages.success(request, f'Você entrou na partida "{partida.nome}" como {empresa_designada["nome"]}!')
+
+            # Popula as Unidades e estoques iniciais para o jogador
+            if nome_empresa_designada in EMPRESAS_SETUP:
+                setup_empresa = EMPRESAS_SETUP[nome_empresa_designada]
+                for nome_produto, unidades in setup_empresa.items():
+                    try:
+                        produto = Produto.objects.get(nome=nome_produto)
+                        for nome_unidade, estoque_inicial in unidades.items():
+                            Unidade.objects.create(
+                                jogador_partida=jp,
+                                produto=produto,
+                                localidade=nome_unidade,
+                                quantidade=estoque_inicial
+                            )
+                    except Produto.DoesNotExist:
+                        messages.error(request, f"O produto base '{nome_produto}' não foi encontrado no sistema.")
+            
+            messages.success(request, f'Você entrou na partida "{partida.nome}" como {nome_empresa_designada}!')
     
     return redirect('dashboard')
 
 @login_required
-def tomar_decisao_view(request, rodada_id):
-    rodada = get_object_or_404(Rodada, id=rodada_id, ativo=True)
-    partida = rodada.partida
-    # Garante que o jogador pertence a esta partida
+def partida_detalhe_view(request, partida_id):
+    partida = get_object_or_404(Partida, id=partida_id)
     jogador_partida = get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
+    rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
 
-    # Impede o acesso se ele já decidiu
-    if Decisao.objects.filter(rodada=rodada, jogador=request.user).exists():
-        messages.warning(request, "Você já tomou sua decisão para esta rodada.")
-        return redirect('dashboard')
-
-    if request.method == 'POST':
+    # Lógica de tomada de decisão
+    if request.method == 'POST' and rodada_ativa:
         try:
-            qtd_produzida = int(request.POST.get('quantidade_produzida'))
+            unidade_id = request.POST.get('unidade_origem_id')
+            qtd_produzida = int(request.POST.get('quantidade_produzida', 0))
             preco_venda = Decimal(request.POST.get('preco_unitario'))
 
-            # Lógica de validação básica
-            if qtd_produzida < 0 or preco_venda <= 0:
-                messages.error(request, "Os valores devem ser positivos.")
+            if not unidade_id:
+                messages.error(request, "Você deve selecionar uma Unidade de Origem.")
             else:
-                Decisao.objects.create(
-                    jogador=request.user,
-                    partida=partida,
-                    rodada=rodada,
-                    produto=rodada.produto_demandado,
-                    quantidade_produzida=qtd_produzida,
-                    preco_unitario=preco_venda
-                )
-                messages.success(request, "Sua decisão foi registrada com sucesso!")
-                return redirect('dashboard')
+                unidade_selecionada = get_object_or_404(Unidade, id=unidade_id, jogador_partida=jogador_partida)
+                if unidade_selecionada.produto != rodada_ativa.produto_demandado:
+                    messages.error(request, "A unidade selecionada não corresponde ao produto demandado.")
+                else:
+                    Decisao.objects.create(
+                        jogador=request.user, partida=partida, rodada=rodada_ativa,
+                        produto=rodada_ativa.produto_demandado, unidade_origem=unidade_selecionada,
+                        quantidade_produzida=qtd_produzida, preco_unitario=preco_venda
+                    )
+                    messages.success(request, "Sua decisão para a rodada foi registrada com sucesso!")
+                    return redirect('partida_detalhe', partida_id=partida.id)
         except (ValueError, TypeError):
             messages.error(request, "Por favor, insira valores válidos.")
 
+    # Busca de dados para exibir na página
+    unidades_do_jogador = Unidade.objects.filter(jogador_partida=jogador_partida).order_by('localidade', 'produto__nome')
+    decisao_feita = False
+    unidades_para_decisao = []
+    if rodada_ativa:
+        decisao_feita = Decisao.objects.filter(rodada=rodada_ativa, jogador=request.user).exists()
+        unidades_para_decisao = unidades_do_jogador.filter(produto=rodada_ativa.produto_demandado)
+    
+    ultima_rodada_finalizada = Rodada.objects.filter(partida=partida, ativo=False).order_by('-numero').first()
+
     context = {
-        'rodada': rodada,
-        'saldo': jogador_partida.saldo
+        'partida': partida,
+        'jogador_partida': jogador_partida,
+        'rodada_ativa': rodada_ativa,
+        'unidades_do_jogador': unidades_do_jogador,
+        'decisao_feita': decisao_feita,
+        'unidades_para_decisao': unidades_para_decisao,
+        'ultima_rodada_finalizada': ultima_rodada_finalizada,
     }
-    return render(request, 'decisao.html', context)
+    return render(request, 'partida_detalhe.html', context)
 
 @login_required
 def resultados_rodada_view(request, rodada_id):
@@ -143,7 +185,7 @@ def resultados_rodada_view(request, rodada_id):
 def reabastecer_estoque_view(request, estoque_id):
     # Garante que a ação seja feita por um POST para segurança
     if request.method == 'POST':
-        estoque = get_object_or_404(EstoqueJogador, id=estoque_id)
+        estoque = get_object_or_404(Unidade, id=estoque_id)
         jogador_partida = estoque.jogador_partida
 
         # Verifica se o jogador logado é o dono deste estoque
@@ -151,7 +193,6 @@ def reabastecer_estoque_view(request, estoque_id):
             messages.error(request, "Você não tem permissão para realizar esta ação.")
             return redirect('dashboard')
 
-        # --- REGRAS DE NEGÓCIO ---
         CUSTO_REABASTECIMENTO = Decimal('5000.00')
         QUANTIDADE_REABASTECIDA = 100 # Estoque volta para 100 unidades
 
@@ -170,3 +211,35 @@ def reabastecer_estoque_view(request, estoque_id):
     
     # Redireciona de volta para o dashboard em qualquer caso
     return redirect('dashboard')
+
+@login_required
+def game_state_api(request, partida_id):
+    """
+    Uma view de API que retorna o estado atual do jogo em formato JSON.
+    """
+    partida = get_object_or_404(Partida, id=partida_id)
+    jogador_partida = get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
+    rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
+
+    # Prepara os dados para serem enviados como JSON
+    data = {
+        'saldo': float(jogador_partida.saldo),
+        'rodada_ativa': None,
+        'decisao_feita': False,
+        'estoques': {}
+    }
+
+    if rodada_ativa:
+        data['rodada_ativa'] = {
+            'numero': rodada_ativa.numero,
+            'demanda_produto': rodada_ativa.produto_demandado.nome if rodada_ativa.produto_demandado else None,
+            'demanda_quantidade': rodada_ativa.quantidade_demandada,
+            'demanda_destino': rodada_ativa.destino_demanda,
+        }
+        data['decisao_feita'] = Decisao.objects.filter(rodada=rodada_ativa, jogador=request.user).exists()
+    
+    unidades = Unidade.objects.filter(jogador_partida=jogador_partida)
+    for unidade in unidades:
+        data['estoques'][f"{unidade.produto.nome} ({unidade.localidade})"] = unidade.quantidade
+    
+    return JsonResponse(data)

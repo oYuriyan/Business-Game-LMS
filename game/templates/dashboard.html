@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Seu Dashboard{% endblock %}
 
 {% block content %}
 <div class="container">
     <h1 class="main-title">Seu Dashboard, {{ user.username }}!</h1>
-    <p>Acompanhe aqui o status das suas partidas.</p>
+    <p>Acesse suas partidas em andamento.</p>
     <hr>
 
     {% if messages %}
@@ -17,65 +16,23 @@
       </div>
     {% endif %}
 
+    <div class="partidas-list">
     {% for info in info_partidas_jogador %}
         <div class="partida-card">
             <div class="partida-header">
                 <h3>{{ info.partida.nome }}</h3>
-                <span class="saldo">Seu Saldo: R$ {{ info.jogador_partida.saldo|floatformat:2 }}</span>
+                <span>Sua Empresa: <strong>{{ info.jogador_partida.nome_empresa_jogador }}</strong></span>
             </div>
             <div class="partida-body">
-                {% if info.rodada_ativa %}
-                    <h4>Rodada {{ info.rodada_ativa.numero }} em andamento</h4>
-                    <div class="demanda-info">
-                        <strong>Demanda do Mercado:</strong> 
-                        {% if info.rodada_ativa.produto_demandado %}
-                            <span>{{ info.rodada_ativa.quantidade_demandada }}x {{ info.rodada_ativa.produto_demandado.nome }} para {{ info.rodada_ativa.destino_demanda }}</span>
-                        {% else %}
-                            <span class="text-warning">Aguardando definição do admin.</span>
-                        {% endif %}
-                    </div>
-
-                    <h5>Seu Estoque:</h5>
-                    <ul>
-                    {% for estoque in info.estoques %}
-                        <li>
-                            {{ estoque.produto.nome }}: {{ estoque.quantidade }} unidades
-                            
-                            {% if estoque.quantidade == 0 %}
-                                <form action="{% url 'reabastecer_estoque' estoque.id %}" method="post" style="display: inline; margin-left: 10px;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-warning btn-sm">Reabastecer (Custo: R$ 5000)</button>
-                                </form>
-                            {% endif %} 
-                        </li>
-                    {% empty %}
-                        <li>Você não possui itens em estoque.</li>
-                    {% endfor %}
-                    </ul>
-
-                    <div class="partida-actions">
-                        {% if info.decisao_feita %}
-                            <p class="text-success"><strong>Sua decisão para esta rodada já foi enviada!</strong> Aguardando os outros jogadores.</p>
-                        {% else %}
-                            <a href="{% url 'tomar_decisao' info.rodada_ativa.id %}" class="btn btn-primary">Tomar Decisão para a Rodada</a>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    {% with ultima_rodada=info.partida.rodadas.last %}
-                        {% if ultima_rodada %}
-                            <p class="text-info">A rodada {{ ultima_rodada.numero }} foi processada! Aguardando o administrador iniciar a próxima.</p>
-                            <div class="partida-actions">
-                                <a href="{% url 'resultados_rodada' ultima_rodada.id %}" class="btn btn-info">Ver Resultados da Rodada {{ ultima_rodada.numero }}</a>
-                            </div>
-                        {% else %}
-                            <p class="text-info">Você entrou na partida! Aguardando o administrador iniciar a primeira rodada.</p>
-                        {% endif %}
-                    {% endwith %}
-                {% endif %}
+                <p>Status: Rodada {{ info.rodada_ativa.numero|default:"1" }} em andamento</p>
+                <div class="partida-actions">
+                    <a href="{% url 'partida_detalhe' info.partida.id %}" class="btn btn-primary">Entrar na Sala da Partida</a>
+                </div>
             </div>
         </div>
     {% empty %}
-        <p>Você ainda não está participando de nenhuma partida.</p>
+        <p>Você não está em nenhuma partida. <a href="{% url 'lobby' %}">Vá para o Lobby para entrar em uma.</a></p>
     {% endfor %}
+    </div>
 </div>
 {% endblock %}

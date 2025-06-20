@@ -1,7 +1,4 @@
-# Em: game/urls.py
-
-from django.urls import path
-# Vamos organizar os imports das views para maior clareza
+from django.urls import path, include
 from game.views import login, dashboard, admin as admin_views, landing, produtos
 
 urlpatterns = [
@@ -19,12 +16,14 @@ urlpatterns = [
     path('estoque/<int:estoque_id>/reabastecer/', dashboard.reabastecer_estoque_view, name='reabastecer_estoque'),
 
     #URLs DO ADMIN
-    path('admin/painel/', admin_views.painel_admin, name='painel_admin'),
-    path('admin/partida/criar/', admin_views.criar_partida_view, name='criar_partida'),
-    path('admin/partida/<int:partida_id>/avancar/', admin_views.avancar_rodada_view, name='avancar_rodada'),
-    path('admin/rodada/<int:rodada_id>/demanda/', admin_views.definir_demanda_view, name='definir_demanda'),
+    path('painel/', admin_views.painel_admin, name='painel_admin'),
+    path('painel/partida/criar/', admin_views.criar_partida_view, name='criar_partida'),
+    path('painel/partida/<int:partida_id>/avancar/', admin_views.avancar_rodada_view, name='avancar_rodada'),
+    path('painel/partida/<int:partida_id>/finalizar/', admin_views.finalizar_partida_view, name='finalizar_partida'),
+    path('painel/rodada/<int:rodada_id>/demanda/', admin_views.definir_demanda_view, name='definir_demanda'),
     #URLs RODADA e PARTIDA
     path('partida/<int:partida_id>/entrar/', dashboard.entrar_partida_view, name='entrar_partida'),
-    path('rodada/<int:rodada_id>/decidir/', dashboard.tomar_decisao_view, name='tomar_decisao'),
+    path('partida/<int:partida_id>/', dashboard.partida_detalhe_view, name='partida_detalhe'),
     path('rodada/<int:rodada_id>/resultados/', dashboard.resultados_rodada_view, name='resultados_rodada'),
+    path('api/partida/<int:partida_id>/state/', dashboard.game_state_api, name='game_state_api'),
 ]

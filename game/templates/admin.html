@@ -66,13 +66,34 @@
                                 <span class="text-danger">Aguardando definição</span>
                             {% endif %}
                         </p>
-                        <div class="partida-actions">
-                            <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="btn btn-secondary">Definir Demanda</a>
+                        <div class="partida-body">
+                            <p><strong>Status:</strong> <span class="status-{{ info.partida.status|lower }}">{{ info.partida.get_status_display }}</span></p>
                             
-                            <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary">Processar e Avançar Rodada</button>
-                            </form>
+                            <div class="partida-actions">
+                                {% if info.partida.status != 'FINALIZADA' %}
+                                    {% if info.rodada_ativa %}
+                                        <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="btn btn-secondary">Definir Demanda</a>
+                                        
+                                        <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary">Processar e Avançar</button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success">Iniciar Primeira Rodada</button>
+                                        </form>
+                                    {% endif %}
+
+                                    <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="action-form" onsubmit="return confirm('Tem certeza que deseja finalizar esta partida?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Finalizar Partida</button>
+                                    </form>
+                                    
+                                {% else %}
+                                    <p class="text-muted">Esta partida foi concluída em {{ info.partida.data_fim|date:"d/m/Y" }}.</p>
+                                {% endif %}
+                            </div>
                         </div>
                     {% else %}
                         <p class="text-warning">Partida não iniciada.</p>

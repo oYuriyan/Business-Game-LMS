@@ -14,7 +14,7 @@ class Partida(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='INICIADA')
     data_inicio = models.DateTimeField(default=timezone.now)
     data_fim = models.DateTimeField(null=True, blank=True)
-    
+    max_rodadas = models.PositiveIntegerField(default=7, help_text="Número máximo de rodadas para a partida.")
     # Relacionamento com usuários (jogadores)
     jogadores = models.ManyToManyField(User, through='JogadorPartida')
 
@@ -26,7 +26,6 @@ class JogadorPartida(models.Model):
     jogador = models.ForeignKey(User, on_delete=models.CASCADE)
     saldo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     nome_empresa_jogador = models.CharField(max_length=50, null=True, blank=True, help_text="Ex: Empresa A, Empresa B...")
-    cd_origem_principal_jogador = models.CharField(max_length=100, null=True, blank=True, help_text="Ex: CD São Paulo")
 
     class Meta:
         unique_together = ('partida', 'jogador')

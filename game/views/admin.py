@@ -3,8 +3,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
+from django.utils import timezone
 from game.models import Partida, Rodada, JogadorPartida, Produto
 from game.services.controle_rodada import avancar_rodada as avancar_rodada_service
+from game.dados_setup import CUSTOS_PRODUCAO_PADRAO, CUSTOS_TRANSPORTE_PADRAO
+from game.models import CustoProducao, CustoTransporte, Produto
 
 # O decorator garante que só superusuários acessem estas páginas
 # Esta é a view principal do painel do admin
@@ -27,14 +30,47 @@ def painel_admin(request):
     }
     return render(request, 'admin.html', context)
 
+def popular_dados_base():
+    """ Popula os custos de produção e transporte se eles não existirem. """
+    
+    # Popula Custos de Produção
+    for empresa, produtos in CUSTOS_PRODUCAO_PADRAO.items():
+        for nome_produto, custo in produtos.items():
+            produto_obj, _ = Produto.objects.get_or_create(nome=nome_produto)
+            CustoProducao.objects.get_or_create(
+                nome_empresa_template=empresa,
+                produto=produto_obj,
+                defaults={'custo_unitario': custo}
+            )
+
+    # Popula Custos de Transporte
+    for item in CUSTOS_TRANSPORTE_PADRAO:
+        produto_obj, _ = Produto.objects.get_or_create(nome=item['produto'])
+        CustoTransporte.objects.get_or_create(
+            nome_empresa_template=item['empresa'],
+            produto=produto_obj,
+            cd_origem=item['origem'],
+            local_destino=item['destino'],
+            defaults={'custo_unitario_transporte': item['custo']}
+        )
+
 # View para a PÁGINA de criar uma nova partida
 @user_passes_test(lambda u: u.is_superuser)
 def criar_partida_view(request):
     if request.method == 'POST':
         nome_partida = request.POST.get('nome_partida')
+        # Pega o valor do novo campo
+        max_rodadas = request.POST.get('max_rodadas', 7) 
+
         if nome_partida:
-            partida = Partida.objects.create(nome=nome_partida, admin=request.user)
-            messages.success(request, f"Partida '{partida.nome}' criada. Agora inicie a primeira rodada.")
+            popular_dados_base()
+            # Salva a partida com o número de rodadas definido
+            partida = Partida.objects.create(
+                nome=nome_partida,
+                admin=request.user,
+                max_rodadas=max_rodadas
+            )
+            messages.success(request, f"Partida '{partida.nome}' criada com {max_rodadas} rodadas.")
             return redirect('painel_admin')
     return render(request, 'criar_partida.html')
 
@@ -61,20 +97,43 @@ def definir_demanda_view(request, rodada_id):
     }
     return render(request, 'definir_demanda.html', context)
 
-# View para o BOTÃO de avançar a rodada de uma partida
+# View para o botao de avançar a rodada de uma partida
 @user_passes_test(lambda u: u.is_superuser)
 def avancar_rodada_view(request, partida_id):
-    # Esta view só deve aceitar POST para segurança
     if request.method == 'POST':
         partida = get_object_or_404(Partida, id=partida_id)
-        
-        # A lógica de serviço já lida com a criação da primeira rodada ou avanço das subsequentes
+
+        # A função de serviço agora cuida de toda a lógica.
         resultado_rodada = avancar_rodada_service(partida)
         
         if resultado_rodada is None:
-            messages.warning(request, f"Não foi possível avançar a rodada da partida '{partida.nome}'. Verifique se todos os jogadores já tomaram suas decisões.")
+            # Se o resultado for None, pode ser por duas razões:
+            # 1. O jogo acabou de ser finalizado.
+            # 2. Nem todos os jogadores tomaram uma decisão.
+            partida.refresh_from_db() # Atualiza o estado da partida do banco
+            if partida.status == 'FINALIZADA':
+                messages.success(request, f"A última rodada foi processada e a partida '{partida.nome}' foi finalizada!")
+            else:
+                messages.warning(request, f"Não foi possível avançar a rodada. Verifique se todos os jogadores já tomaram suas decisões.")
         else:
             messages.success(request, f"Rodada processada. Rodada {resultado_rodada.numero} iniciada com sucesso para a partida '{partida.nome}'.")
 
-    # Sempre redireciona de volta para o painel
+    return redirect('painel_admin')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def finalizar_partida_view(request, partida_id):
+    if request.method == 'POST':
+        partida = get_object_or_404(Partida, id=partida_id)
+        
+        # Muda o status da partida para finalizada
+        partida.status = 'FINALIZADA'
+        partida.data_fim = timezone.now()
+        partida.save()
+        
+        # Também desativa qualquer rodada que estivesse ativa
+        Rodada.objects.filter(partida=partida, ativo=True).update(ativo=False)
+        
+        messages.info(request, f"A partida '{partida.nome}' foi finalizada manualmente.")
+    
     return redirect('painel_admin')

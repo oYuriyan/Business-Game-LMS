@@ -2,7 +2,7 @@ from .partida import Partida, JogadorPartida
 from .produtos import Produto
 from .rodada import Rodada
 from .decisao import Decisao
-from .estoque import EstoqueJogador
+from .unidade import Unidade
 from .custotransporte import CustoTransporte
 from .custoproducao import CustoProducao
 
@@ -12,7 +12,7 @@ __all__ = [
     'Produto',
     'Rodada',
     'Decisao',
-    'EstoqueJogador',
+    'Unidade',
     'CustoTransporte',
-    'CustoProducao'
+    'CustoProducao',
 ]

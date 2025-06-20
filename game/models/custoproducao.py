@@ -1,5 +1,6 @@
 from django.db import models
 from .produtos import Produto
+from decimal import Decimal
 
 class CustoProducao(models.Model):
     """
@@ -8,7 +9,7 @@ class CustoProducao(models.Model):
     """
     nome_empresa_template = models.CharField(max_length=50, help_text="Ex: Empresa A, Empresa B...")
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    custo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    custo_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     class Meta:
         # Garante que só existe um custo por empresa/produto

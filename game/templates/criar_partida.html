@@ -14,6 +14,10 @@
             <label for="id_nome_partida">Nome da Partida:</label>
             <input type="text" name="nome_partida" id="id_nome_partida" required>
         </div>
+        <div class="form-group">
+            <label for="id_max_rodadas">Número de Rodadas (padrão 7):</label>
+            <input type="number" name="max_rodadas" value="7" min="1" id="id_max_rodadas" required>
+        </div>
         <div class="form-actions">
             <a href="{% url 'painel_admin' %}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-success">Criar Partida</button>

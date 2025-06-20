@@ -4,14 +4,17 @@ from django.contrib.auth.models import User
 from .rodada import Rodada
 from .partida import Partida
 from .produtos import Produto
+from .unidade import Unidade
+from decimal import Decimal
 
 class Decisao(models.Model):
     jogador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='decisoes_jogador')
     partida = models.ForeignKey(Partida, on_delete=models.CASCADE, related_name='decisoes_partida')
     rodada = models.ForeignKey(Rodada, on_delete=models.CASCADE, related_name='decisoes_rodada')
+    unidade_origem = models.ForeignKey(Unidade, on_delete=models.CASCADE, related_name='decisoes_origem')
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)  # Ex: 'cafeteira', 'torradeira'
-    quantidade_produzida = models.PositiveIntegerField()
-    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    quantidade_produzida = models.PositiveIntegerField(default=0)
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     distribuicao = models.JSONField(default=dict)  # Ex: {"Cliente A": 30, "Cliente B": 20}
     
     custo_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
