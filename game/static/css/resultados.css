@@ -1,0 +1,27 @@
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+.results-grid .info-card:nth-child(n+3) { /* Vencedores e Placar ocupam a largura toda */
+    grid-column: 1 / -1;
+}
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.styled-table th, .styled-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+.dark-mode .styled-table th, .dark-mode .styled-table td { border-color: #495057; }
+.styled-table thead th {
+    background-color: #f8f9fa;
+}
+.dark-mode .styled_table thead th { background-color: #343a40; }
+.highlight-user {
+    background-color: #d1ecf1;
+    font-weight: bold;
+}
+.dark-mode .highlight-user { background-color: #3d5a63; }

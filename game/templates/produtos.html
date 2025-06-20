@@ -1,48 +1,57 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-{% endblock %}
-
-{% block title %}Gerenciamento de Produtos{% endblock %}
+{% block title %}Gerenciar Produtos{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center;">Lista de Produtos</h2>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="flex">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <header class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-box-open mr-4 text-blue-500"></i> Gerenciar Produtos</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Adicione ou edite os produtos disponíveis no jogo.</p>
+            </header>
 
-<div style="text-align: right; margin-bottom: 20px;">
-  <a href="{% url 'criar_produto' %}"><button>Criar Novo Produto</button></a>
+            <div class="flex justify-end mb-6">
+                <a href="{% url 'criar_produto' %}" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center">
+                    <i class="fas fa-plus-circle mr-2"></i> Adicionar Novo Produto
+                </a>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Nome</th>
+                                <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Categoria</th>
+                                <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Preço Base</th>
+                                <th class="p-4 font-semibold text-gray-600 dark:text-gray-300 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for produto in produtos %}
+                            <tr class="text-gray-700 dark:text-gray-300">
+                                <td class="p-4">{{ produto.nome }}</td>
+                                <td class="p-4">{{ produto.categoria }}</td>
+                                <td class="p-4">R$ {{ produto.preco|floatformat:2 }}</td>
+                                <td class="p-4 text-right">
+                                    <a href="{% url 'editar_produto' produto.id %}" class="text-blue-500 hover:underline mr-4">Editar</a>
+                                    <form action="{% url 'excluir_produto' produto.id %}" method="post" class="inline" onsubmit="return confirm('Tem certeza?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:underline">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="p-4 text-center text-gray-500">Nenhum produto cadastrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 </div>
-
-<table class="product-table">
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>Preço</th>
-      <th>Quantidade</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for produto in produtos %}
-    <tr>
-      <td>{{ produto.nome }}</td>
-      <td>R$ {{ produto.preco }}</td>
-      <td>{{ produto.quantidade }}</td>
-      <td>
-        <a href="{% url 'editar_produto' produto.id %}">Editar</a>
-        <form action="{% url 'excluir_produto' produto.id %}" method="POST" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit">Excluir</button>
-        </form>
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="4" style="text-align: center;">Nenhum produto encontrado.</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
 {% endblock %}

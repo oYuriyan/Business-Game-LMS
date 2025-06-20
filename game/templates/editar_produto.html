@@ -1,23 +1,25 @@
 {% extends "base.html" %}
-
-{% load static %}
-
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-{% endblock %}
-
-{% block title %}Gerenciamento de Produtos{% endblock %}
-
+{% block title %}Editar Produto{% endblock %}
 {% block content %}
-<h2 style="text-align: center;">editar Produto: {{ produto.nome }}</h2>
-<form method="POST">
-    {% csrf_token %}
-    <label for="nome">Nome:</label>
-    <input type="text" name="nome" value="{{ produto.nome }}" required>
-    <label for="quantidade">Quantidade:</label>
-    <input type="number" name="quantidade" value="{{ produto.quantidade }}" required>
-    <label for="preco">Preço:</label>
-    <input type="number" name="preco" value="{{ produto.preco }}" step="0.01" required>
-    <button type="submit">Atualizar Produto</button>
-</form>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-edit mr-4 text-blue-500"></i> Editar: {{ form.instance.nome }}</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Ajuste os parâmetros deste item.</p>
+        </header>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+            <form method="post">
+                {% csrf_token %}
+                <div class="space-y-6">
+                    {{ form.as_p }}
+                </div>
+                <div class="pt-8 flex justify-end gap-4">
+                    <a href="{% url 'listar_produtos' %}" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300">Cancelar</a>
+                    <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Atualizar Produto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

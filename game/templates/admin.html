@@ -1,117 +1,75 @@
 {% extends "base.html" %}
-{% load static %}
-
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-{% endblock %}
 
 {% block title %}Painel do Administrador{% endblock %}
 
 {% block content %}
-<div class="admin-container">
-    <h2 class="admin-title">Painel do Administrador</h2>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-user-shield mr-4 text-blue-500"></i> Painel do Administrador</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Gerencie as partidas e acompanhe o progresso dos jogos.</p>
+        </header>
 
-    {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <section class="quick-actions">
-        <div class="card" onclick="window.location.href='{% url 'criar_partida' %}'">
-            <h2><i class="fas fa-plus-circle"></i> Nova Partida</h2>
-            <p>Comece um novo jogo</p>
-        </div>
-        <div class="card" onclick="window.location.href='{% url 'listar_produtos' %}'">
-            <h2><i class="fas fa-box-open"></i> Produtos</h2>
-            <p>Gerencie os produtos do jogo</p>
-        </div>
-        <div class="card">
-            <h2><i class="fas fa-chart-line"></i> Relatórios</h2>
-            <p>Acesse gráficos e desempenho (futuro)</p>
-        </div>
-    </section>
-
-    <hr class="section-divider">
-
-    <section class="partidas-management">
-        <h3 class="section-title">Gerenciar Partidas</h3>
-        
-        {% for info in partidas_info %}
-            <div class="partida-card">
-                <div class="partida-header">
-                    <h4>{{ info.partida.nome }}</h4>
-                    <span>Criada em: {{ info.partida.data_inicio|date:"d/m/Y H:i" }}</span>
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="p-4 rounded-md text-sm {% if message.tags == 'success' %} bg-green-100 text-green-800 {% elif message.tags == 'error' %} bg-red-100 text-red-800 {% else %} bg-yellow-100 text-yellow-800 {% endif %}">
+                    {{ message }}
                 </div>
-                <div class="partida-body">
-                    <p><strong>Jogadores:</strong> 
-                        {% for jogador_partida in info.jogadores %}
-                            {{ jogador_partida.jogador.username }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            Nenhum jogador inscrito.
-                        {% endfor %}
-                    </p>
-                    <p><strong>Status:</strong> <span class="status-{{ info.partida.status|lower }}">{{ info.partida.get_status_display }}</span></p>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-                    {% if info.rodada_ativa %}
-                        <p><strong>Rodada Ativa: {{ info.rodada_ativa.numero }}</strong></p>
-                        <p>
-                            <strong>Demanda:</strong> 
-                            {% if info.rodada_ativa.produto_demandado %}
-                                {{ info.rodada_ativa.quantidade_demandada }}x {{ info.rodada_ativa.produto_demandado.nome }} para {{ info.rodada_ativa.destino_demanda }}
+        <!-- Barra de Ações Rápidas -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            <a href="{% url 'criar_partida' %}" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center"><i class="fas fa-plus-circle mr-2"></i> Criar Nova Partida</a>
+            <a href="{% url 'listar_produtos' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-300 flex items-center"><i class="fas fa-box-open mr-2"></i> Gerenciar Produtos</a>
+            <a href="/admin/" target="_blank" class="bg-gray-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-800 transition duration-300 flex items-center"><i class="fas fa-cogs mr-2"></i> Configurações Avançadas</a>
+        </div>
+
+        <!-- Seção de Gerenciamento de Partidas -->
+        <h3 class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Partidas Atuais</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {% for info in partidas_info %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ info.partida.nome }}</h4>
+                            <span class="text-xs font-bold uppercase py-1 px-3 rounded-full 
+                                {% if info.partida.status == 'INICIADA' %} bg-green-200 text-green-800 
+                                {% elif info.partida.status == 'FINALIZADA' %} bg-red-200 text-red-800
+                                {% else %} bg-yellow-200 text-yellow-800 {% endif %}">
+                                {{ info.partida.get_status_display }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Criada em: {{ info.partida.data_inicio|date:"d/m/Y" }}</p>
+                        <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-users mr-2"></i> <strong>{{ info.jogadores.count }}</strong> Jogadores</p>
+                        <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-gamepad mr-2"></i> Rodada <strong>{{ info.rodada_ativa.numero|default:"Não Iniciada" }}</strong> / {{ info.partida.max_rodadas }}</p>
+                    </div>
+                    <div class="mt-auto bg-gray-50 dark:bg-gray-700/50 p-4 border-t dark:border-gray-700">
+                        <div class="flex flex-wrap gap-2 justify-end">
+                            {% if info.partida.status != 'FINALIZADA' %}
+                                <a href="{% url 'admin_spectator_view' info.partida.id %}" class="bg-indigo-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-indigo-600" title="Ver como Espectador"><i class="fas fa-binoculars"></i></a>
+                                {% if info.rodada_ativa %}
+                                    <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="bg-gray-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-gray-600" title="Definir Demanda"><i class="fas fa-bullhorn"></i></a>
+                                    <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="inline">{% csrf_token %}<button type="submit" class="bg-blue-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-blue-600" title="Processar e Avançar Rodada"><i class="fas fa-forward"></i></button></form>
+                                {% else %}
+                                    {% if info.jogadores.count >= 2 %}<form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="inline">{% csrf_token %}<button type="submit" class="bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-green-600" title="Iniciar Primeira Rodada"><i class="fas fa-play"></i></button></form>{% else %}<button class="bg-gray-300 text-gray-500 text-xs font-bold py-1 px-3 rounded-full cursor-not-allowed" disabled title="Mínimo de 2 jogadores"><i class="fas fa-play"></i></button>{% endif %}
+                                {% endif %}
+                                <form action="{% url 'toggle_avanco_automatico' info.partida.id %}" method="post" class="inline">{% csrf_token %}{% if info.partida.avanco_automatico %}<button type="submit" class="bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-yellow-600" title="Desligar Avanço Automático"><i class="fas fa-toggle-on"></i></button>{% else %}<button type="submit" class="bg-gray-400 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-gray-500" title="Ligar Avanço Automático"><i class="fas fa-toggle-off"></i></button>{% endif %}</form>
+                                <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('Tem certeza?');">{% csrf_token %}<button type="submit" class="bg-red-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-600" title="Finalizar Partida"><i class="fas fa-flag-checkered"></i></button></form>
                             {% else %}
-                                <span class="text-danger">Aguardando definição</span>
+                                <span class="text-sm text-gray-500">Partida Finalizada</span>
                             {% endif %}
-                        </p>
-                    {% endif %}
-                </div>''
-                <div class="partida-actions">
-                    {% if info.partida.status != 'FINALIZADA' %}
-                        <a href="{% url 'admin_spectator_view' info.partida.id %}" class="btn btn-info">Ver como Espectador</a>
-                        
-                        {% if info.rodada_ativa %}
-                            <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="btn btn-secondary">Definir Demanda</a>
-                            <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary">Processar e Avançar</button>
-                            </form>
-                        {% else %}
-                            {% if info.jogadores.count >= 2 %}
-                                <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="action-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-success">Iniciar Primeira Rodada</button>
-                                </form>
-                                <form action="{% url 'toggle_avanco_automatico' info.partida.id %}" method="post" class="action-form">
-                                    {% csrf_token %}
-                                    {% if info.partida.avanco_automatico %}
-                                        <button type="submit" class="btn btn-warning">Desligar Avanço Automático</button>
-                                    {% else %}
-                                        <button type="submit" class="btn btn-info">Ligar Avanço Automático</button>
-                                    {% endif %}
-                                </form>
-                            {% else %}
-                                <button type="button" class="btn btn-success" disabled title="É necessário ter no mínimo 2 jogadores para iniciar.">Iniciar Primeira Rodada</button>
-                                <small class="text-muted d-block mt-1">Mínimo de 2 jogadores requerido.</small>
-                            {% endif %}
-                        {% endif %}
-
-                        <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="action-form" onsubmit="return confirm('Tem certeza que deseja finalizar esta partida?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Finalizar Partida</button>
-                        </form>
-
-                    {% else %}
-                        <p class="text-muted">Esta partida foi concluída em {{ info.partida.data_fim|date:"d/m/Y" }}.</p>
-                    {% endif %}
+                        </div>
+                    </div>
                 </div>
-            </div>
-        {% empty %}
-            <p>Nenhuma partida criada ainda. <a href="{% url 'criar_partida' %}">Crie a primeira!</a></p>
-        {% endfor %}
-    </section>
+            {% empty %}
+                <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+                    <p class="text-gray-500">Nenhuma partida criada ainda. <a href="{% url 'criar_partida' %}" class="text-blue-600 font-semibold hover:underline">Crie a primeira!</a></p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}

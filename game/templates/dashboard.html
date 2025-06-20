@@ -3,36 +3,49 @@
 {% block title %}Seu Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="main-title">Seu Dashboard, {{ user.username }}!</h1>
-    <p>Acesse suas partidas em andamento.</p>
-    <hr>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-tachometer-alt mr-4 text-blue-500"></i> Meu Dashboard</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Acesse suas partidas em andamento, {{ user.username }}.</p>
+        </header>
 
-    {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <div class="partidas-list">
-    {% for info in info_partidas_jogador %}
-        <div class="partida-card">
-            <div class="partida-header">
-                <h3>{{ info.partida.nome }}</h3>
-                <span>Sua Empresa: <strong>{{ info.jogador_partida.nome_empresa_jogador }}</strong></span>
-            </div>
-            <div class="partida-body">
-                <p>Status: Rodada {{ info.rodada_ativa.numero|default:"1" }} em andamento</p>
-                <div class="partida-actions">
-                    <a href="{% url 'partida_detalhe' info.partida.id %}" class="btn btn-primary">Entrar na Sala da Partida</a>
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-md {% if message.tags == 'success' %} bg-green-100 text-green-800 {% else %} bg-yellow-100 text-yellow-800 {% endif %}">
+                    {{ message }}
                 </div>
-            </div>
+            {% endfor %}
         </div>
-    {% empty %}
-        <p>Você não está em nenhuma partida. <a href="{% url 'lobby' %}">Vá para o Lobby para entrar em uma.</a></p>
-    {% endfor %}
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for info in info_partidas_jogador %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ info.partida.nome }}</h3>
+                            <span class="text-xs font-bold uppercase py-1 px-3 rounded-full 
+                                {% if info.partida.status == 'INICIADA' %} bg-green-200 text-green-800 {% else %} bg-red-200 text-red-800 {% endif %}">
+                                {{ info.partida.get_status_display }}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mt-2"><i class="fas fa-building mr-2"></i> Sua Empresa: <strong>{{ info.jogador_partida.nome_empresa_jogador }}</strong></p>
+                        <p class="text-gray-600 dark:text-gray-400"><i class="fas fa-gamepad mr-2"></i> Rodada Atual: <strong>{{ info.rodada_ativa.numero|default:"Aguardando Início" }}</strong></p>
+                    </div>
+                    <div class="mt-auto bg-gray-50 dark:bg-gray-700 p-4 text-center">
+                        <a href="{% url 'partida_detalhe' info.partida.id %}" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300 w-full block">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Entrar na Sala
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+                    <p class="text-gray-600 dark:text-gray-400">Você não está em nenhuma partida. <a href="{% url 'lobby' %}" class="text-blue-600 font-semibold hover:underline">Vá para o Lobby para entrar em uma.</a></p>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -1,41 +1,73 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  {% block styles %}{% endblock %}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <meta charset="UTF-8">
-  <title>{% block title %}Business Game{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="pt-BR" class=""> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Business Game{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block styles %}{% endblock %}
 </head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
-<body>
-
-  <header>
-    <h1>Business Game</h1>
-  </header>
-
-  <nav>
     {% if user.is_authenticated %}
-      <a href="{% url 'dashboard' %}">Dashboard</a>
-      <a href="{% url 'lobby' %}">Lobby</a>
-  
-    {% if user.is_authenticated and user.is_staff %}
-      <a href="{% url 'painel_admin' %}">Administração</a>
-    {% endif %}
-  
-      <a href="{% url 'logout' %}">Sair</a>
-    {% else %}
-      <a href="{% url 'login' %}">Login</a>
-    {% endif %}
-  </nav>
+        <div class="flex h-screen">
+            <aside class="w-64 flex-shrink-0 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
+                <div class="h-20 flex items-center justify-center border-b dark:border-gray-700">
+                    <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        <i class="fas fa-gamepad"></i> Business Game
+                    </a>
+                </div>
 
-  <div class="content">
-    {% block content %}
-    <!-- Conteúdo das páginas específicas -->
-    {% endblock %}
-  </div>
-  {% block extra_js %}{% endblock %}
+                <nav class="flex-1 px-4 py-4 space-y-2">
+                    {% if user.is_superuser %}
+                        <a href="{% url 'home' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-home w-6 text-center"></i><span class="mx-4">Home</span>
+                        </a>
+                        <a href="{% url 'painel_admin' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-user-shield w-6 text-center"></i><span class="mx-4">Painel Admin</span>
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-tachometer-alt w-6 text-center"></i><span class="mx-4">Dashboard</span>
+                        </a>
+                        <a href="{% url 'lobby' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-door-open w-6 text-center"></i><span class="mx-4">Lobby</span>
+                        </a>
+                        <a href="/admin/" target="_blank" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-cogs w-6 text-center"></i><span class="mx-4">Configurações</span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'home' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-home w-6 text-center"></i><span class="mx-4">Home</span>
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-tachometer-alt w-6 text-center"></i><span class="mx-4">Dashboard</span>
+                        </a>
+                        <a href="{% url 'lobby' %}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                            <i class="fas fa-door-open w-6 text-center"></i><span class="mx-4">Lobby</span>
+                        </a>
+                    {% endif %}
+                </nav>
+
+                <div class="p-4 border-t dark:border-gray-700">
+                    <p class="text-sm font-semibold truncate">{{ user.username }}</p>
+                    <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:underline">Sair <i class="fas fa-sign-out-alt"></i></a>
+                </div>
+            </aside>
+
+            <main class="flex-1 overflow-y-auto">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+
+    {% else %}
+        {% block full_page_content %}
+            {% endblock %}
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

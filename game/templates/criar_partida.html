@@ -3,25 +3,32 @@
 {% block title %}Criar Nova Partida{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="main-title">Criar Nova Partida</h1>
-    <p>Dê um nome para o novo jogo que será iniciado.</p>
-    <hr>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="page-header">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-plus-circle mr-4 text-blue-500"></i> Criar Nova Partida</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Defina os parâmetros para o novo jogo.</p>
+        </header>
 
-    <form method="post" class="styled-form">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="id_nome_partida">Nome da Partida:</label>
-            <input type="text" name="nome_partida" id="id_nome_partida" required>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+            <form method="post" class="styled-form">
+                {% csrf_token %}
+                <div class="space-y-6">
+                    <div class="form-group">
+                        <label for="id_nome_partida" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Partida:</label>
+                        <input type="text" name="nome_partida" id="id_nome_partida" required class="mt-1 block w-full">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_max_rodadas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número de Rodadas:</label>
+                        <input type="number" name="max_rodadas" value="7" min="1" id="id_max_rodadas" required class="mt-1 block w-full">
+                    </div>
+                </div>
+                <div class="pt-8 flex justify-end gap-4">
+                    <a href="{% url 'painel_admin' %}" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Cancelar</a>
+                    <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Criar Partida</button>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="id_max_rodadas">Número de Rodadas (padrão 7):</label>
-            <input type="number" name="max_rodadas" value="7" min="1" id="id_max_rodadas" required>
-        </div>
-        <div class="form-actions">
-            <a href="{% url 'painel_admin' %}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-success">Criar Partida</button>
-        </div>
-    </form>
+    </div>
 </div>
 {% endblock %}

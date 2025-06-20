@@ -1,176 +1,139 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}{{ partida.nome }}{% endblock %}
-
+{% block title %}{{ partida.nome }} - Business Game{% endblock %}
 
 {% block content %}
-<style>
-    .game-container { display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; }
-    .main-panel { flex: 3; min-width: 400px; }
-    .side-panel { flex: 1; min-width: 250px; background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; }
-    .dark-mode .side-panel { background-color: #343a40; }
-    .unidade-card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 0.5rem; border-radius: 5px; }
-    .dark-mode .unidade-card { border-color: #555; }
-</style>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
 
-<div class="container">
-    <h1 class="main-title">Sala da Partida: {{ partida.nome }}</h1>
-    <p>Bem-vindo, {{ user.username }} ({{ jogador_partida.nome_empresa_jogador }})</p>
-    <hr>
-    
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
+        <!-- Cabeçalho da Página -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white">Sala da Partida: <span class="text-blue-600">{{ partida.nome }}</span></h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Você joga como <strong>{{ jogador_partida.nome_empresa_jogador }}</strong> | Rodada: <strong>{{ rodada_ativa.numero|default:"Aguardando Início" }}</strong></p>
+        </header>
 
-    <div class="game-container">
-        <div class="main-panel">
-            {% if rodada_ativa %}
-                <div class="card">
-                    <h3>Rodada {{ rodada_ativa.numero }}: Demanda do Mercado</h3>
-                    {% if rodada_ativa.produto_demandado %}
-                        <p>O mercado busca por <strong>{{ rodada_ativa.quantidade_demandada }}</strong> unidades de <strong>{{ rodada_ativa.produto_demandado.nome }}</strong> para <strong>{{ rodada_ativa.destino_demanda }}</strong>.</p>
-                        
-                        <hr>
-                        
-                        {% if decisao_feita %}
-                            <p class="text-success"><strong>Sua decisão para esta rodada foi enviada!</strong> Aguarde o processamento pelo administrador.</p>
+        <!-- Container Principal com Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Coluna Principal (Esquerda) -->
+            <main class="lg:col-span-2 space-y-8">
+
+                <!-- Card de Demanda e Decisão -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    {% if rodada_ativa %}
+                        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center"><i class="fas fa-bullhorn text-blue-500 mr-3"></i> Demanda do Mercado (Rodada {{ rodada_ativa.numero }})</h3>
+                        {% if rodada_ativa.produto_demandado %}
+                            <p class="text-gray-700 dark:text-gray-300 text-lg">O mercado busca por <strong>{{ rodada_ativa.quantidade_demandada }}</strong> unidades de <strong>{{ rodada_ativa.produto_demandado.nome }}</strong> para <strong>{{ rodada_ativa.destino_demanda }}</strong>.</p>
+                            <hr class="my-6 dark:border-gray-700">
+                            
+                            {% if decisao_feita %}
+                                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
+                                    <p class="font-bold">Decisão Enviada!</p>
+                                    <p>Aguarde o processamento da rodada pelo administrador.</p>
+                                </div>
+                            {% else %}
+                                <form method="post">
+                                    <h4 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Sua Jogada Estratégica</h4>
+                                    {% csrf_token %}
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="id_unidade_origem" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Unidade de Origem (Estoque)</label>
+                                            <select name="unidade_origem_id" id="id_unidade_origem" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">Selecione...</option>
+                                                {% for unidade in unidades_para_decisao %}
+                                                    <option value="{{ unidade.id }}">{{ unidade.localidade }} ({{ unidade.quantidade }} un.)</option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">A unidade escolhida definirá o custo de transporte e de onde o estoque será debitado.</small>
+                                        </div>
+                                        <div>
+                                            <label for="quantidade_produzida" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Produção Adicional</label>
+                                            <input type="number" name="quantidade_produzida" min="0" value="0" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Insira a quantidade de itens que deseja fabricar nesta rodada. O custo será debitado do seu saldo.">
+
+                                            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">O custo de produção será debitado e o valor adicionado ao estoque da unidade escolhida.</small>
+                                        </div>
+                                        <div>
+                                            <label for="preco_unitario" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preço de Venda Unitário</label>
+                                            <input type="number" name="preco_unitario" step="0.01" min="0.01" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Defina o preço pelo qual você ofertará seu produto. O menor preço geralmente vence a demanda.">
+
+                                            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Analise seus custos para definir uma margem de lucro competitiva.</small>
+                                        </div>
+                                        <div class="pt-2">
+                                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300">Confirmar Decisão</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            {% endif %}
                         {% else %}
-                            <form method="post" class="styled-form">
-                                <h4>Sua Jogada</h4>
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <label for="id_unidade_origem">Escolha a Unidade de Origem:</label>
-                                    <select name="unidade_origem_id" id="id_unidade_origem" required class="form-control">
-                                        <option value="">--- Estoque | Local ---</option>
-                                        {% for unidade in unidades_para_decisao %}
-                                        <option value="{{ unidade.id }}">
-                                            {{ unidade.quantidade }} un. | {{ unidade.localidade }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="quantidade_produzida">Produção Adicional:</label>
-                                    <input type="number" name="quantidade_produzida" min="0" value="0" required class="form-control">
-                                    <small>O custo será debitado e a produção adicionada ao estoque da unidade escolhida.</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="preco_unitario">Preço de Venda por Unidade:</label>
-                                    <input type="number" name="preco_unitario" step="0.01" min="0.01" required class="form-control">
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-success">Confirmar Decisão</button>
-                                </div>
-                            </form>
+                             <p class="text-yellow-600 dark:text-yellow-400"><i class="fas fa-hourglass-half mr-2"></i>Aguardando o administrador definir a demanda para a rodada.</p>
                         {% endif %}
                     {% else %}
-                        <p class="text-warning">Aguardando o administrador definir a demanda para a rodada.</p>
+                        <div class="text-center p-8">
+                            <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2"><i class="fas fa-pause-circle text-blue-500"></i> Pausa Entre Rodadas</h3>
+                            <p class="text-gray-600 dark:text-gray-400">Aguarde o administrador iniciar a próxima rodada.</p>
+                        </div>
                     {% endif %}
                 </div>
-            {% else %}
-                <div class="card">
-                    <h3>Aguardando Próxima Rodada</h3>
-                    <p>O administrador ainda não iniciou a próxima rodada.</p>
+
+                <!-- Card de Resultados Anteriores -->
+                {% if ultima_rodada_finalizada %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
+                     <a href="{% url 'resultados_rodada' ultima_rodada_finalizada.id %}" class="text-blue-600 hover:text-blue-800 font-semibold"><i class="fas fa-poll"></i> Ver Resultados da Rodada {{ ultima_rodada_finalizada.numero }}</a>
                 </div>
-            {% endif %}
+                {% endif %}
+            </main>
 
-            {% if ultima_rodada_finalizada %}
-                <div class="partida-actions" style="margin-top: 1rem;">
-                    <a href="{% url 'resultados_rodada' ultima_rodada_finalizada.id %}" class="btn btn-info">Ver Resultados da Última Rodada (Rodada {{ ultima_rodada_finalizada.numero }})</a>
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="side-panel">
-            <hr>
-            <!-- ADICIONE ESTA NOVA SEÇÃO -->
-            <h4>Sua Tabela de Custos</h4>
-            <div class="custos-info">
-                <strong>Custos de Produção:</strong>
-                <ul>
-                    {% for custo_p in custos_producao %}
-                        <li>{{ custo_p.produto.nome }}: R$ {{ custo_p.custo_unitario|floatformat:2 }}</li>
-                    {% endfor %}
-                </ul>
-
-                <strong>Custos de Transporte (por unidade):</strong>
-                {% for origem, custos_t in custos_transporte.items %}
-                    <div class="unidade-card" style="margin-top: 0.5rem; background-color: #e9ecef;">
-                        <strong>Da {{ origem }}:</strong>
-                        <ul>
-                            {% for custo in custos_t %}
-                                <li>Para {{ custo.local_destino }} ({{ custo.produto.nome }}): R$ {{ custo.custo_unitario_transporte|floatformat:2 }}</li>
-                            {% endfor %}
-                        </ul>
+            <!-- Coluna Lateral (Direita) -->
+            <aside class="lg:col-span-1 space-y-8">
+                <!-- Card de Status -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-user-circle text-blue-500 mr-2"></i>Seu Painel</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center" title="Seu dinheiro disponível para investir em produção e reabastecimento.">
+                            <span class="text-gray-600 dark:text-gray-300"><i class="fas fa-wallet mr-2"></i>Saldo</span>
+                            <span class="font-bold text-green-600 text-lg">R$ {{ jogador_partida.saldo|floatformat:2 }}</span>
+                        </div>
                     </div>
-                {% endfor %}
-            </div>
-            <h3>Seu Status</h3>
-            <p><strong>Saldo:</strong> <span class="text-success">R$ {{ jogador_partida.saldo|floatformat:2 }}</span></p>
-            <hr>
-            <h4>Suas Unidades e Estoques</h4>
-            {% for unidade in unidades_do_jogador %}
-                <div class="unidade-card">
-                    <strong>{{ unidade.localidade }}</strong><br>
-                    <small>{{ unidade.produto.nome }}: {{ unidade.quantidade }} un.</small>
                 </div>
-            {% empty %}
-                <p>Você ainda não possui unidades de estoque.</p>
-            {% endfor %}
+                <!-- Card de Estoques -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-boxes text-blue-500 mr-2"></i>Suas Unidades</h3>
+                    <div class="space-y-3">
+                        {% for unidade in unidades_do_jogador %}
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg" title="Estoque disponível no CD/Fábrica '{{ unidade.localidade }}'.">
+                                <p class="font-semibold text-gray-800 dark:text-white">{{ unidade.localidade }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ unidade.produto.nome }}: <strong>{{ unidade.quantidade }} un.</strong></p>
+                            </div>
+                        {% empty %}
+                             <p class="text-gray-500">Nenhuma unidade de estoque encontrada.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
 </div>
-{% endblock %}
-
-
+{%endblock%}
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Pega o ID da partida que está no contexto do template
         const partidaId = {{ partida.id }};
         const apiUrl = `/api/partida/${partidaId}/state/`;
+        const formElement = document.querySelector('form[method="post"]'); // O formulário de decisão
 
-        // Função que atualiza a página com os novos dados
-        function updatePage(data) {
-            // Atualiza o saldo
-            const saldoElement = document.querySelector('.side-panel .text-success');
-            if (saldoElement) {
-                // Converte para número e formata para ter duas casas decimais
-                const saldoFormatado = Number(data.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                saldoElement.textContent = saldoFormatado;
-            }
+        // Função principal que busca os dados no servidor
+        async function fetchGameState() {
+            // --- A VERIFICAÇÃO CRÍTICA ---
+            // Verifica se o utilizador está ativamente a digitar ou a selecionar algo no formulário.
+            const activeElement = document.activeElement;
+            const isUserInteractingWithForm = formElement && formElement.contains(activeElement) && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'SELECT');
 
-            // Atualiza a informação da rodada e demanda
-            const demandaContainer = document.querySelector('.main-panel .card'); // Container geral
-            if (demandaContainer && data.rodada_ativa) {
-                const demandaTexto = demandaContainer.querySelector('p strong');
-                if(demandaTexto && data.rodada_ativa.demanda_produto) {
-                    demandaTexto.parentElement.innerHTML = `O mercado busca por <strong>${data.rodada_ativa.demanda_quantidade}</strong> unidades de <strong>${data.rodada_ativa.demanda_produto}</strong> para <strong>${data.rodada_ativa.demanda_destino}</strong>.`;
-                }
+            if (isUserInteractingWithForm) {
+                console.log('Polling pausado: Utilizador está a interagir com o formulário.');
+                return; // Sai imediatamente da função, não toca em nada na página.
             }
             
-            // Lógica para recarregar a página se uma nova rodada começar
-            const rodadaAtualNaPagina = document.querySelector('.main-panel .card h3');
-            if (rodadaAtualNaPagina) {
-                const rodadaAtualNumero = parseInt(rodadaAtualNaPagina.textContent.replace('Rodada ', '').split(':')[0]);
-                if (data.rodada_ativa && rodadaAtualNumero !== data.rodada_ativa.numero) {
-                    console.log('Nova rodada detectada! Recarregando...');
-                    window.location.reload();
-                }
-            } else if (data.rodada_ativa) {
-                // Caso a página estivesse mostrando "Aguardando próxima rodada" e uma nova começou
-                console.log('Nova rodada iniciada! Recarregando...');
-                window.location.reload();
-            }
-        }
-
-        // Função que busca os dados no servidor
-        async function fetchGameState() {
             try {
                 const response = await fetch(apiUrl);
                 if (!response.ok) {
@@ -178,14 +141,46 @@
                     return;
                 }
                 const data = await response.json();
-                updatePage(data);
+
+                // Verifica se a página atual mostra o formulário ou a mensagem de "Decisão Enviada"
+                const isDecisionFormVisible = document.querySelector('form.styled-form') !== null;
+
+                // A página SÓ será recarregada se uma nova rodada começar E o utilizador NÃO estiver
+                // a ver o formulário de decisão (ou seja, ele já enviou sua decisão).
+                if (!isDecisionFormVisible) {
+                    const rodadaHeader = document.querySelector('.game-header strong');
+                    const rodadaAtualNumero = rodadaHeader ? parseInt(rodadaHeader.textContent.replace('Rodada: ', '')) : null;
+                    
+                    if (data.rodada_ativa && rodadaAtualNumero !== data.rodada_ativa.numero) {
+                        console.log('Nova rodada detectada! Recarregando...');
+                        window.location.reload();
+                        return; // Para a execução após o recarregamento
+                    }
+                }
+
+                // Atualizações silenciosas que podem acontecer a qualquer momento (quando o utilizador não está a digitar)
+                updateSilentElements(data);
+
             } catch (error) {
                 console.error('Falha na requisição:', error);
             }
         }
 
-        // Inicia o "polling": busca os dados a cada 2 segundos
-        setInterval(fetchGameState, 2000); // 2000 ms = 2 segundos
+        // Função que atualiza apenas os pedaços da página que não interferem com o utilizador
+        function updateSilentElements(data) {
+            // Atualiza o saldo
+            const saldoElement = document.querySelector('.status-panel .text-success');
+            if (saldoElement) {
+                const saldoFormatado = Number(data.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                if (saldoElement.textContent !== saldoFormatado) {
+                    saldoElement.textContent = saldoFormatado;
+                }
+            }
+            // Adicionar aqui outras atualizações silenciosas, se necessário (ex: estoque)
+        }
+
+        // Inicia o "polling": busca os dados a cada 5 segundos
+        setInterval(fetchGameState, 5000); // 5000 ms = 5 segundos
     });
 </script>
 {% endblock %}

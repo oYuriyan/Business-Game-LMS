@@ -3,85 +3,83 @@
 {% block title %}Espectador: {{ partida.nome }}{% endblock %}
 
 {% block content %}
-<style>
-    .spectator-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 1.5rem;
-    }
-    .player-card {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        background-color: #fff;
-    }
-    .player-card-header {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-bottom: 1px solid #dee2e6;
-    }
-    .player-card-body {
-        padding: 1rem;
-    }
-    .unidade-list {
-        list-style-type: none;
-        padding-left: 0;
-    }
-    .dark-mode .player-card {
-        background-color: #343a40;
-        border-color: #495057;
-    }
-    .dark-mode .player-card-header {
-        background-color: #495057;
-    }
-</style>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Cabeçalho da Página -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-binoculars mr-4 text-blue-500"></i> Visão de Espectador</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Acompanhe em tempo real o status da partida: <strong>{{ partida.nome }}</strong></p>
+        </header>
 
-<div class="container">
-    <h1 class="main-title">Visão de Espectador</h1>
-    <h2 class="sub-title">Partida: {{ partida.nome }}</h2>
-    
-    {% if rodada_ativa %}
-        <p><strong>Status:</strong> Rodada {{ rodada_ativa.numero }} em andamento.</p>
-    {% else %}
-        <p><strong>Status:</strong> Aguardando início de rodada ou finalizada.</p>
-    {% endif %}
-    <hr>
-    
-    <div class="spectator-grid">
-        {% for info in info_jogadores %}
-            <div class="player-card">
-                <div class="player-card-header">
-                    <h4>{{ info.jogador_partida.nome_empresa_jogador }}</h4>
-                    <small>Jogador: {{ info.jogador_partida.jogador.username }}</small>
-                </div>
-                <div class="player-card-body">
-                    <p><strong>Saldo:</strong> <span class="text-success">R$ {{ info.jogador_partida.saldo|floatformat:2 }}</span></p>
+        <!-- Card de Status da Rodada -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            {% if rodada_ativa %}
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Status Atual: <span class="text-green-500">Rodada {{ rodada_ativa.numero }} em andamento.</span></h3>
+                {% if rodada_ativa.produto_demandado %}
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Demanda: <strong>{{ rodada_ativa.quantidade_demandada }}x {{ rodada_ativa.produto_demandado.nome }}</strong> para <strong>{{ rodada_ativa.destino_demanda }}</strong>.</p>
+                {% else %}
+                    <p class="text-yellow-600 dark:text-yellow-400 mt-2">Aguardando definição da demanda.</p>
+                {% endif %}
+            {% else %}
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Status Atual: <span class="text-yellow-500">Pausa entre rodadas.</span></h3>
+                <p class="text-gray-600 dark:text-gray-400 mt-2">O administrador precisa iniciar a próxima rodada.</p>
+            {% endif %}
+        </div>
+
+        <!-- Grid com os Cards dos Jogadores -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {% for info in info_jogadores %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col">
+                    <!-- Cabeçalho do Card do Jogador -->
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h4 class="text-2xl font-bold text-gray-900 dark:text-white">{{ info.jogador_partida.nome_empresa_jogador }}</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Jogador: {{ info.jogador_partida.jogador.username }}</p>
+                    </div>
                     
-                    {% if rodada_ativa %}
-                        <p><strong>Decisão na Rodada {{ rodada_ativa.numero }}:</strong> 
-                        {% if info.decisao_feita %}
-                            <span class="text-success">Enviada</span>
-                        {% else %}
-                            <span class="text-warning">Aguardando</span>
+                    <!-- Corpo do Card -->
+                    <div class="p-6 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-300 font-semibold"><i class="fas fa-wallet mr-2"></i>Saldo</span>
+                            <span class="font-bold text-green-600 text-lg">R$ {{ info.jogador_partida.saldo|floatformat:2 }}</span>
+                        </div>
+                        
+                        {% if rodada_ativa %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-300 font-semibold"><i class="fas fa-check-square mr-2"></i>Decisão na Rodada</span>
+                            {% if info.decisao_feita %}
+                                <span class="text-xs font-bold uppercase py-1 px-3 rounded-full bg-green-200 text-green-800">Enviada</span>
+                            {% else %}
+                                <span class="text-xs font-bold uppercase py-1 px-3 rounded-full bg-yellow-200 text-yellow-800">Aguardando</span>
+                            {% endif %}
+                        </div>
                         {% endif %}
-                        </p>
-                    {% endif %}
-                    
-                    <hr>
-                    <strong>Unidades de Estoque:</strong>
-                    <ul class="unidade-list">
-                        {% for unidade in info.unidades %}
-                            <li>{{ unidade.localidade }} - {{ unidade.produto.nome }}: <strong>{{ unidade.quantidade }} un.</strong></li>
-                        {% endfor %}
-                    </ul>
+                        
+                        <hr class="dark:border-gray-700">
+                        
+                        <div>
+                            <h5 class="font-semibold text-gray-800 dark:text-white mb-2"><i class="fas fa-boxes mr-2"></i>Estoques</h5>
+                            <ul class="space-y-2 text-sm">
+                                {% for unidade in info.unidades %}
+                                    <li class="flex justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                                        <span class="text-gray-600 dark:text-gray-300">{{ unidade.localidade }} - {{ unidade.produto.nome }}:</span>
+                                        <strong class="text-gray-800 dark:text-white">{{ unidade.quantidade }} un.</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        {% empty %}
-            <p>Ainda não há jogadores nesta partida.</p>
-        {% endfor %}
-    </div>
+            {% empty %}
+                <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+                    <p class="text-gray-500">Ainda não há jogadores nesta partida.</p>
+                </div>
+            {% endfor %}
+        </div>
 
-    <div class="form-actions" style="text-align: center; margin-top: 2rem;">
-        <a href="{% url 'painel_admin' %}" class="btn btn-secondary">Voltar ao Painel Principal</a>
+        <div class="text-center mt-12">
+            <a href="{% url 'painel_admin' %}" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300"><i class="fas fa-arrow-left mr-2"></i> Voltar ao Painel Principal</a>
+        </div>
     </div>
 </div>
 {% endblock %}

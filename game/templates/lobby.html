@@ -3,36 +3,44 @@
 {% block title %}Lobby de Partidas{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="main-title">Lobby</h1>
-    <p>Veja as partidas disponíveis e entre em uma para começar a jogar.</p>
-    <hr>
-
-    <div class="partidas-list">
-    {% for partida in partidas_disponiveis %}
-        <div class="partida-card">
-            <div class="partida-header">
-                <h3>{{ partida.nome }}</h3>
-                <span>Criada por: {{ partida.admin.username }}</span>
-            </div>
-            <div class="partida-body">
-                <p>Status: {{ partida.status|default:"Aguardando Jogadores" }}</p>
-                <div class="partida-actions">
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-door-open mr-4 text-blue-500"></i> Lobby de Partidas</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Veja as partidas disponíveis e junte-se a uma para começar.</p>
+        </header>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for partida in partidas_disponiveis %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
+                <div class="p-6">
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ partida.nome }}</h3>
+                        <span class="text-xs font-bold uppercase py-1 px-3 rounded-full {% if partida.status == 'INICIADA' %} bg-green-200 text-green-800 {% else %} bg-gray-200 text-gray-800 {% endif %}">
+                            {{ partida.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2"><i class="fas fa-user-shield mr-2"></i> Admin: <strong>{{ partida.admin.username }}</strong></p>
+                    <p class="text-gray-600 dark:text-gray-400"><i class="fas fa-users mr-2"></i> Jogadores: <strong>{{ partida.jogadorpartida_set.count }} / 4</strong></p>
+                </div>
+                <div class="mt-auto bg-gray-50 dark:bg-gray-700 p-4">
                     {% if partida.id in partidas_do_jogador %}
-                        <p class="text-success"><strong>Você já está nesta partida!</strong></p>
-                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Ir para o Dashboard</a>
+                        <a href="{% url 'partida_detalhe' partida.id %}" class="bg-gray-400 text-white font-bold py-2 px-6 rounded-full w-full block text-center cursor-not-allowed">Já está na partida</a>
                     {% else %}
                         <form action="{% url 'entrar_partida' partida.id %}" method="post">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-success">Entrar na Partida</button>
+                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300">
+                                <i class="fas fa-play mr-2"></i> Entrar na Partida
+                            </button>
                         </form>
                     {% endif %}
                 </div>
             </div>
+        {% empty %}
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+                <p class="text-gray-500">Nenhuma partida disponível no momento. Peça para o administrador criar uma.</p>
+            </div>
+        {% endfor %}
         </div>
-    {% empty %}
-        <p>Nenhuma partida disponível no momento. Peça para o administrador criar uma.</p>
-    {% endfor %}
     </div>
 </div>
 {% endblock %}

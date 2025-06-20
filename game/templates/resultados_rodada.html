@@ -1,61 +1,67 @@
 {% extends "base.html" %}
-
 {% block title %}Resultados da Rodada {{ rodada.numero }}{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h1 class="main-title">Resultados da Rodada {{ rodada.numero }}</h1>
-    <h2 class="sub-title">Partida: {{ rodada.partida.nome }}</h2>
-    <hr>
+<div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white flex items-center"><i class="fas fa-poll-h mr-4 text-blue-500"></i> Resultados da Rodada {{ rodada.numero }}</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Partida: {{ rodada.partida.nome }}</p>
+        </header>
 
-    <div class="card">
-        <h3>Demanda do Mercado</h3>
-        <p>O mercado buscou por <strong>{{ resultados.demanda.quantidade }}</strong> unidades de <strong>{{ resultados.demanda.produto }}</strong> com destino a <strong>{{ resultados.demanda.destino }}</strong>.</p>
-    </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Card de Demanda -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-bullhorn mr-2"></i> Demanda do Mercado</h3>
+                <p class="text-gray-700 dark:text-gray-300">O mercado buscou por <strong>{{ resultados.demanda.quantidade }}</strong> unidades de <strong>{{ resultados.demanda.produto }}</strong> para <strong>{{ resultados.demanda.destino }}</strong>.</p>
+            </div>
 
-    <div class="card">
-        <h3>Ofertas da Rodada</h3>
-        <p>Para manter o sigilo, apenas os preços ofertados são públicos.</p>
-        <table class="styled-table">
-            <thead>
-                <tr>
-                    <th>Empresa</th>
-                    <th>Preço Ofertado por Unidade</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for oferta in resultados.ofertas %}
-                <tr>
-                    <td>{{ oferta.empresa }}</td>
-                    <td>R$ {{ oferta.preco_ofertado|floatformat:2 }}</td>
-                </tr>
+            <!-- Card de Pregão Reverso -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-gavel mr-2"></i> Pregão Reverso (Ofertas)</h3>
+                <ul class="space-y-2">
+                {% for oferta in resultados.ofertas|dictsort:"preco_ofertado" %}
+                    <li class="flex justify-between items-center text-gray-700 dark:text-gray-300"><span>{{ oferta.empresa }}</span> <span class="font-semibold">R$ {{ oferta.preco_ofertado|floatformat:2 }}</span></li>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </ul>
+            </div>
 
-    <div class="card">
-        <h3>Vencedor(es) da Rodada</h3>
-        {% for venda in resultados.vendas_realizadas %}
-            <p>A <strong>{{ venda.empresa }}</strong> vendeu <strong>{{ venda.quantidade }}</strong> unidades ao preço de R$ {{ venda.preco_unitario|floatformat:2 }}.</p>
-        {% empty %}
-            <p>Nenhuma venda foi realizada nesta rodada.</p>
-        {% endfor %}
-    </div>
+            <!-- Card de Vendas Realizadas -->
+            <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-trophy mr-2"></i> Vendas Realizadas</h3>
+                {% for venda in resultados.vendas_realizadas %}
+                    <p class="text-gray-700 dark:text-gray-300">A <strong>{{ venda.empresa }}</strong> vendeu <strong>{{ venda.quantidade }}</strong> unidades de <strong>{{ venda.origem }}</strong> ao preço de R$ {{ venda.preco_unitario|floatformat:2 }}.</p>
+                {% empty %}
+                    <p class="text-gray-500">Nenhuma venda foi realizada nesta rodada.</p>
+                {% endfor %}
+            </div>
 
-    <div class="card">
-        <h3>Seu Desempenho na Rodada</h3>
-        <p>Estas informações são visíveis apenas para você.</p>
-        {% for jogador_final in resultados.estado_final_jogadores %}
-            {% if jogador_final.jogador == user.username %}
-                <p><strong>Seu Saldo Final:</strong> R$ {{ jogador_final.saldo_final|floatformat:2 }}</p>
-                {% endif %}
-        {% endfor %}
+            <!-- Card de Placar Final -->
+            <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2"></i> Placar Final da Rodada</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="p-3 font-semibold text-gray-600 dark:text-gray-300">Empresa</th>
+                                <th class="p-3 font-semibold text-gray-600 dark:text-gray-300 text-right">Saldo Final</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for jogador in resultados.estado_final_jogadores|dictsortreversed:"saldo_final" %}
+                            <tr class="text-gray-700 dark:text-gray-300 {% if jogador.jogador == user.username %} bg-blue-50 dark:bg-blue-900/20 font-bold {% endif %}">
+                                <td class="p-3">{{ jogador.empresa }} ({{ jogador.jogador }})</td>
+                                <td class="p-3 text-right">R$ {{ jogador.saldo_final|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-8">
+            <a href="{% url 'partida_detalhe' rodada.partida.id %}" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300"><i class="fas fa-arrow-left mr-2"></i> Voltar para a Sala da Partida</a>
+        </div>
     </div>
-    
-    <div class="form-actions" style="text-align: center; margin-top: 2rem;">
-        <a href="{% url 'dashboard' %}" class="btn btn-primary">Voltar para o Dashboard</a>
-    </div>
-
 </div>
 {% endblock %}

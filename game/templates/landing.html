@@ -1,59 +1,72 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/landing.css' %}">
-{% endblock %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Game - Simulador de Mercado</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Pequenos ajustes e fontes customizadas */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        .hero-bg { background-image: linear-gradient(to right, rgba(0, 86, 179, 0.9), rgba(0, 123, 255, 0.8)), url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2832&auto=format&fit=crop'); background-size: cover; background-position: center;}
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
 
-{% block title %}Business Game - Bem-vindo{% endblock %}
+    <!-- Navegação -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-md fixed w-full z-10">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-blue-600">Business Game</a>
+            <div>
+                <a href="{% url 'login' %}" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300">Entrar</a>
+            </div>
+        </div>
+    </nav>
 
-{% block content %}
-  <section class="hero">
-    <h1>Business Game</h1>
-    <button id="toggle-theme" class="theme-button">🌓 Alternar Tema</button>
-    <p>Simule tomadas de decisão logísticas, estratégicas e administrativas em um ambiente gamificado e dinâmico.</p>
-    <div class="cta">
-      {% if user.is_authenticated %}
-        <a href="{% url 'dashboard' %}">Ir para o Dashboard</a>
-      {% else %}
-        <a href="{% url 'login' %}">Começar agora</a>
-      {% endif %}
-    </div>
-  </section>
+    <!-- Seção Herói -->
+    <header class="hero-bg text-white pt-32 pb-24">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-5xl font-bold mb-4">Transforme Teoria em Prática</h1>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">Um simulador de mercado e logística gamificado, projetado para desafiar suas habilidades estratégicas e otimizar seu aprendizado.</p>
+            <a href="{% url 'register' %}" class="bg-white text-blue-600 font-bold text-lg py-3 px-8 rounded-full hover:bg-gray-200 transition duration-300">Comece a Jogar Agora</a>
+        </div>
+    </header>
 
-  <script>
-    // Verifica se tema está salvo no localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-mode');
-    }
-  
-    // Alterna tema e salva no localStorage
-    document.getElementById('toggle-theme').addEventListener('click', function () {
-      document.body.classList.toggle('dark-mode');
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-      } else {
-        localStorage.setItem('theme', 'light');
-      }
-    });
-  </script>
+    <!-- Seção de Features -->
+    <section class="py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold mb-2">Por Que Business Game?</h2>
+            <p class="text-gray-600 mb-12">Ferramentas poderosas para um aprendizado imersivo.</p>
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <i class="fas fa-cogs text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Simulação Realista</h3>
+                    <p class="text-gray-600">Enfrente um mercado competitivo com demandas variáveis e tome decisões estratégicas que impactam seu resultado.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <i class="fas fa-calculator text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Otimização Logística</h3>
+                    <p class="text-gray-600">Aplique conceitos como Simplex e Vogel para calcular custos, precificar produtos e otimizar sua cadeia de suprimentos.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <i class="fas fa-chart-line text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Análise de Desempenho</h3>
+                    <p class="text-gray-600">Acompanhe seu progresso, analise os resultados de cada rodada e aprenda com as estratégias dos seus concorrentes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <section class="info-section">
-    <h2>Sobre o Projeto</h2>
-    <p>
-      O Business Game é um simulador de mercado desenvolvido para estudantes e entusiastas da logística e administração.
-    </p>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Business Game. Desenvolvido por Yuri Yan e Vinicius Soares.</p>
+        </div>
+    </footer>
 
-    <div class="icon-grid">
-      <img src="https://cdn-icons-png.flaticon.com/512/3106/3106773.png" alt="Decisão">
-      <img src="https://cdn-icons-png.flaticon.com/512/1828/1828490.png" alt="Estratégia">
-      <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" alt="Usuários">
-      <img src="https://cdn-icons-png.flaticon.com/512/888/888879.png" alt="Desempenho">
-    </div>
-  </section>
-
-  <footer>
-    <p>&copy; 2025 Business Game. Todos os direitos reservados.</p>
-  </footer>
-{% endblock %}
+</body>
+</html>

@@ -1,79 +1,98 @@
-/* ------------------------------
-        PAINEL ADMINISTRATIVO
-   ------------------------------ */
-
-   .admin-panel {
-    background-color: #fefefe;
-    border-left: 6px solid var(--cor-primaria);
-    padding: 2rem;
-    border-radius: 10px;
-    margin: 2rem auto;
-    max-width: 900px;
-  }
-  
-  .admin-panel h2 {
-    color: var(--cor-primaria);
-  }
-  
-  .admin-actions button {
-    background-color: var(--cor-secundaria);
-    margin: 0.5rem;
-  }
-  
-  body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f2f4f8;
-  margin: 0;
-  padding: 0;
+.quick-actions-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
 }
 
-header {
-  background-color: #1f1f2e;
-  color: #fff;
-  padding: 20px;
-  text-align: center;
+.section-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+.dark-mode .section-title {
+    color: #ced4da;
 }
 
-.dashboard {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 40px;
+/* Reutilizando o estilo de card do dashboard */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
 }
 
-.card {
-  background-color: #ffffff;
-  padding: 30px;
-  width: 250px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
+/* Opcional: Ajustes finos no footer do card para o admin */
+.partida-card-footer .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
 }
 
-.card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+.partida-card-footer {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
 }
 
-.card h2 {
-  margin: 0 0 10px;
-  font-size: 20px;
-  color: #1f1f2e;
+.partida-card-footer form {
+    margin: 0;
 }
 
-.card p {
-  color: #6c6c80;
-  font-size: 14px;
+/* Estilos para os formulários de Criar Partida e Definir Demanda */
+.styled-form .form-group {
+    margin-bottom: 1.5rem;
 }
 
-.alerta {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    font-weight: bold;
+.styled-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
 }
-.alerta.success { background-color: #d4edda; color: #155724; }
-.alerta.warning { background-color: #fff3cd; color: #856404; }
-.alerta.error   { background-color: #f8d7da; color: #721c24; }
+
+.styled-form input[type="text"],
+.styled-form input[type="number"],
+.styled-form select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.styled-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Estilos para a tabela de produtos */
+.info-card .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.info-card .styled-table th, 
+.info-card .styled-table td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.dark-mode .info-card .styled-table th, 
+.dark-mode .info-card .styled-table td {
+    border-color: #444;
+}
+
+.info-card .styled-table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+.dark-mode .info-card .styled-table thead th {
+    background-color: #3a3f44;
+}
+
+.info-card .styled-table td.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
