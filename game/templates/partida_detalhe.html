@@ -35,28 +35,28 @@
                                 <form method="post">
                                     <h4 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Sua Jogada Estratégica</h4>
                                     {% csrf_token %}
-                                    <div class="space-y-4">
+                                    <div class="space-y-6">
                                         <div>
                                             <label for="id_unidade_origem" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Unidade de Origem (Estoque)</label>
-                                            <select name="unidade_origem_id" id="id_unidade_origem" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <select name="unidade_origem_id" id="id_unidade_origem" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Escolha de qual dos seus Centros de Distribuição (CDs) você irá atender à demanda. A escolha afeta o custo de transporte.">
                                                 <option value="">Selecione...</option>
                                                 {% for unidade in unidades_para_decisao %}
                                                     <option value="{{ unidade.id }}">{{ unidade.localidade }} ({{ unidade.quantidade }} un.)</option>
                                                 {% endfor %}
                                             </select>
-
+                                            <!-- DICA ADICIONADA -->
                                             <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">A unidade escolhida definirá o custo de transporte e de onde o estoque será debitado.</small>
                                         </div>
                                         <div>
                                             <label for="quantidade_produzida" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Produção Adicional</label>
                                             <input type="number" name="quantidade_produzida" min="0" value="0" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Insira a quantidade de itens que deseja fabricar nesta rodada. O custo será debitado do seu saldo.">
-
-                                            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">O custo de produção será debitado e o valor adicionado ao estoque da unidade escolhida.</small>
+                                            <!-- DICA ADICIONADA -->
+                                            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">O custo de produção será debitado imediatamente do seu saldo.</small>
                                         </div>
                                         <div>
                                             <label for="preco_unitario" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preço de Venda Unitário</label>
                                             <input type="number" name="preco_unitario" step="0.01" min="0.01" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Defina o preço pelo qual você ofertará seu produto. O menor preço geralmente vence a demanda.">
-
+                                            <!-- DICA ADICIONADA -->
                                             <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Analise seus custos para definir uma margem de lucro competitiva.</small>
                                         </div>
                                         <div class="pt-2">
