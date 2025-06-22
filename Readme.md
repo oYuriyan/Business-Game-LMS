@@ -6,19 +6,19 @@
 
 ## Sobre o Projeto
 
-O **Business Game LMS** é uma plataforma web gamificada para simulação de cenários de logística e negócios. [cite_start]O projeto foi concebido como uma ferramenta educacional para oferecer aos alunos uma oportunidade de aprendizado interdisciplinar, permitindo a aplicação prática de conceitos de logística, como o Método de Aproximação de Vogel (MAV) e Simplex. 
+O **Business Game LMS** é uma plataforma web gamificada para simulação de cenários de logística e negócios. O projeto foi concebido como uma ferramenta educacional para oferecer aos alunos uma oportunidade de aprendizado interdisciplinar, permitindo a aplicação prática de conceitos de logística, como o Método de Aproximação de Vogel (MAV) e Simplex. 
 
-[cite_start]Desenvolvido para o curso de Tecnologia em Análise e Desenvolvimento de Sistemas, o jogo digitaliza e expande uma atividade prática aplicada com sucesso desde 2002, impactando centenas de alunos.  [cite_start]Os jogadores assumem o papel de empresas concorrentes, tomando decisões estratégicas sobre produção, estoque, precificação e transporte para atender a uma demanda de mercado variável a cada rodada. 
+ Desenvolvido para o curso de Tecnologia em Análise e Desenvolvimento de Sistemas, o jogo digitaliza e expande uma atividade prática aplicada com sucesso desde 2002, impactando centenas de alunos. Os jogadores assumem o papel de empresas concorrentes, tomando decisões estratégicas sobre produção, estoque, precificação e transporte para atender a uma demanda de mercado variável a cada rodada. 
 
 ## Funcionalidades Principais
 
-* [cite_start]**Ambiente Multiplayer:** Partidas com até 4 jogadores competindo em tempo real. 
-* [cite_start]**Gerenciamento de Partidas:** O administrador (professor) tem controle total para criar, iniciar, pausar e finalizar partidas. 
-* [cite_start]**Simulação por Rodadas:** O jogo avança em rodadas, cada uma com uma nova demanda de produto, quantidade e destino. 
+*  **Ambiente Multiplayer:** Partidas com até 4 jogadores competindo em tempo real. 
+*  **Gerenciamento de Partidas:** O administrador (professor) tem controle total para criar, iniciar, pausar e finalizar partidas. 
+*  **Simulação por Rodadas:** O jogo avança em rodadas, cada uma com uma nova demanda de produto, quantidade e destino. 
 * **Decisões Estratégicas:** Os jogadores devem decidir o quanto produzir e o preço de venda para serem competitivos.
-* [cite_start]**Logística de Custos:** Custos de produção e transporte variam para cada empresa, exigindo cálculos precisos para maximizar o lucro. 
-* [cite_start]**Sistema de "Pregão":** O sistema simula uma licitação, onde a empresa com o menor preço ganha a venda, desde que tenha estoque. 
-* [cite_start]**Resultados e Ranking:** A cada rodada e ao final da partida, são exibidos relatórios de desempenho e um ranking dos jogadores. 
+*  **Logística de Custos:** Custos de produção e transporte variam para cada empresa, exigindo cálculos precisos para maximizar o lucro. 
+*  **Sistema de "Pregão":** O sistema simula uma licitação, onde a empresa com o menor preço ganha a venda, desde que tenha estoque. 
+*  **Resultados e Ranking:** A cada rodada e ao final da partida, são exibidos relatórios de desempenho e um ranking dos jogadores. 
 
 ## Tecnologias Utilizadas
 
@@ -90,7 +90,7 @@ Siga estas instruções para configurar e rodar o ambiente de desenvolvimento.
 5.  **Admin:** Quando todos os jogadores estiverem na sala, inicie a primeira rodada. Defina o produto, a quantidade e o destino da demanda.
 6.  **Jogadores:** Na sala da partida, tomem suas decisões de produção e preço e as confirmem.
 7.  **Admin:** Após todos decidirem, avance a rodada. Os resultados serão processados e uma nova rodada começará.
-8.  O ciclo se repete até a última rodada. [cite_start]O vencedor é quem tiver o maior saldo ao final. 
+8.  O ciclo se repete até a última rodada. O vencedor é quem tiver o maior saldo ao final. 
 
 ## Autores
 
