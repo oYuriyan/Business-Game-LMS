@@ -180,3 +180,11 @@ def toggle_avanco_automatico_view(request, partida_id):
     
     return redirect('painel_admin')
     
+@user_passes_test(lambda u: u.is_superuser)
+def excluir_partida_view(request, partida_id):
+    # Apenas aceita requisições POST para segurança
+    if request.method == 'POST':
+        partida = get_object_or_404(Partida, id=partida_id)
+        partida.delete()
+        messages.success(request, f"A partida '{partida.nome}' foi excluída com sucesso.")
+    return redirect('painel_admin')

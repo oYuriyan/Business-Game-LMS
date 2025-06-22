@@ -22,10 +22,12 @@ urlpatterns = [
     path('painel/partida/<int:partida_id>/avancar/', admin_views.avancar_rodada_view, name='avancar_rodada'),
     path('painel/partida/<int:partida_id>/toggle_auto_advance/', admin_views.toggle_avanco_automatico_view, name='toggle_avanco_automatico'),
     path('painel/partida/<int:partida_id>/finalizar/', admin_views.finalizar_partida_view, name='finalizar_partida'),
+    path('painel/partida/<int:partida_id>/excluir/', admin_views.excluir_partida_view, name='excluir_partida'),
     path('painel/rodada/<int:rodada_id>/demanda/', admin_views.definir_demanda_view, name='definir_demanda'),
     #URLs RODADA e PARTIDA
     path('partida/<int:partida_id>/entrar/', dashboard.entrar_partida_view, name='entrar_partida'),
     path('partida/<int:partida_id>/', dashboard.partida_detalhe_view, name='partida_detalhe'),
     path('rodada/<int:rodada_id>/resultados/', dashboard.resultados_rodada_view, name='resultados_rodada'),
+    path('partida/<int:partida_id>/resultados_finais/', dashboard.resultados_finais_view, name='resultados_finais'),
     path('api/partida/<int:partida_id>/state/', dashboard.game_state_api, name='game_state_api'),
 ]

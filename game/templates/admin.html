@@ -20,14 +20,12 @@
         </div>
         {% endif %}
 
-        <!-- Barra de Ações Rápidas -->
         <div class="flex flex-wrap gap-4 mb-8">
             <a href="{% url 'criar_partida' %}" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center"><i class="fas fa-plus-circle mr-2"></i> Criar Nova Partida</a>
             <a href="{% url 'listar_produtos' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-300 flex items-center"><i class="fas fa-box-open mr-2"></i> Gerenciar Produtos</a>
             <a href="/admin/" target="_blank" class="bg-gray-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-800 transition duration-300 flex items-center"><i class="fas fa-cogs mr-2"></i> Configurações Avançadas</a>
         </div>
 
-        <!-- Seção de Gerenciamento de Partidas -->
         <h3 class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Partidas Atuais</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {% for info in partidas_info %}
@@ -47,7 +45,7 @@
                         <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-gamepad mr-2"></i> Rodada <strong>{{ info.rodada_ativa.numero|default:"Não Iniciada" }}</strong> / {{ info.partida.max_rodadas }}</p>
                     </div>
                     <div class="mt-auto bg-gray-50 dark:bg-gray-700/50 p-4 border-t dark:border-gray-700">
-                        <div class="flex flex-wrap gap-2 justify-end">
+                        <div class="flex flex-wrap gap-2 justify-end items-center">
                             {% if info.partida.status != 'FINALIZADA' %}
                                 <a href="{% url 'admin_spectator_view' info.partida.id %}" class="bg-indigo-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-indigo-600" title="Ver como Espectador"><i class="fas fa-binoculars"></i></a>
                                 {% if info.rodada_ativa %}
@@ -59,7 +57,14 @@
                                 <form action="{% url 'toggle_avanco_automatico' info.partida.id %}" method="post" class="inline">{% csrf_token %}{% if info.partida.avanco_automatico %}<button type="submit" class="bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-yellow-600" title="Desligar Avanço Automático"><i class="fas fa-toggle-on"></i></button>{% else %}<button type="submit" class="bg-gray-400 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-gray-500" title="Ligar Avanço Automático"><i class="fas fa-toggle-off"></i></button>{% endif %}</form>
                                 <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('Tem certeza?');">{% csrf_token %}<button type="submit" class="bg-red-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-600" title="Finalizar Partida"><i class="fas fa-flag-checkered"></i></button></form>
                             {% else %}
-                                <span class="text-sm text-gray-500">Partida Finalizada</span>
+                                <span class="text-sm text-gray-500 mr-2">Partida Finalizada</span>
+                                <a href="{% url 'admin_spectator_view' info.partida.id %}" class="bg-indigo-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-indigo-600" title="Ver Relatório Final"><i class="fas fa-poll-h"></i> Relatório</a>
+                                <form action="{% url 'excluir_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('ATENÇÃO: Esta ação é irreversível. Deseja realmente excluir esta partida e todos os seus dados?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-gray-700 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-700" title="Excluir Partida Permanentemente">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             {% endif %}
                         </div>
                     </div>

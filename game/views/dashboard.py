@@ -270,3 +270,19 @@ def game_state_api(request, partida_id):
         data['estoques'][f"{unidade.produto.nome} ({unidade.localidade})"] = unidade.quantidade
     
     return JsonResponse(data)
+
+@login_required
+def resultados_finais_view(request, partida_id):
+    partida = get_object_or_404(Partida, id=partida_id, status='FINALIZADA')
+    
+    # Garante que o jogador que está acessando pertence à partida
+    get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
+
+    # Busca todos os jogadores da partida e ordena pelo saldo final em ordem decrescente
+    jogadores_classificacao = JogadorPartida.objects.filter(partida=partida).order_by('-saldo')
+
+    context = {
+        'partida': partida,
+        'ranking': jogadores_classificacao
+    }
+    return render(request, 'resultados_finais.html', context)
