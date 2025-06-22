@@ -39,7 +39,7 @@ Siga estas instruções para configurar e rodar o ambiente de desenvolvimento.
 
 1.  **Clone o repositório:**
     ```bash
-    git clone <url-do-seu-repositorio>
+    git clone <https://github.com/oYuriyan/Business-Game-LMS>
     cd business-game-lms
     ```
 
