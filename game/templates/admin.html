@@ -13,7 +13,7 @@
         {% if messages %}
         <div class="mb-6 space-y-2">
             {% for message in messages %}
-                <div class="p-4 rounded-md text-sm {% if message.tags == 'success' %} bg-green-100 text-green-800 {% elif message.tags == 'error' %} bg-red-100 text-red-800 {% else %} bg-yellow-100 text-yellow-800 {% endif %}">
+                <div class="p-4 rounded-md text-sm {% if message.tags == 'success' %} bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200 {% elif message.tags == 'error' %} bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200 {% else %} bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200 {% endif %}">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -41,31 +41,52 @@
                             </span>
                         </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Criada em: {{ info.partida.data_inicio|date:"d/m/Y" }}</p>
-                        <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-users mr-2"></i> <strong>{{ info.jogadores.count }}</strong> Jogadores</p>
-                        <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-gamepad mr-2"></i> Rodada <strong>{{ info.rodada_ativa.numero|default:"Não Iniciada" }}</strong> / {{ info.partida.max_rodadas }}</p>
+                        <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-users mr-2"></i> <strong>{{ info.jogadores.count }}</strong> de <strong>{{ info.partida.max_jogadores }}</strong> Jogadores</p>
+                        
+                        {% if info.partida.status == 'FINALIZADA' %}
+                            <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-flag-checkered mr-2"></i> Partida Concluída</p>
+                        {% else %}
+                            <p class="text-gray-700 dark:text-gray-300"><i class="fas fa-gamepad mr-2"></i> Rodada <strong>{{ info.rodada_ativa.numero_rodada|default:"Não Iniciada" }}</strong> / {{ info.partida.numero_rodadas }}</p>
+                        {% endif %}
                     </div>
                     <div class="mt-auto bg-gray-50 dark:bg-gray-700/50 p-4 border-t dark:border-gray-700">
-                        <div class="flex flex-wrap gap-2 justify-end items-center">
-                            {% if info.partida.status != 'FINALIZADA' %}
-                                <a href="{% url 'admin_spectator_view' info.partida.id %}" class="bg-indigo-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-indigo-600" title="Ver como Espectador"><i class="fas fa-binoculars"></i></a>
-                                {% if info.rodada_ativa %}
-                                    <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="bg-gray-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-gray-600" title="Definir Demanda"><i class="fas fa-bullhorn"></i></a>
-                                    <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="inline">{% csrf_token %}<button type="submit" class="bg-blue-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-blue-600" title="Processar e Avançar Rodada"><i class="fas fa-forward"></i></button></form>
-                                {% else %}
-                                    {% if info.jogadores.count >= 2 %}<form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="inline">{% csrf_token %}<button type="submit" class="bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-green-600" title="Iniciar Primeira Rodada"><i class="fas fa-play"></i></button></form>{% else %}<button class="bg-gray-300 text-gray-500 text-xs font-bold py-1 px-3 rounded-full cursor-not-allowed" disabled title="Mínimo de 2 jogadores"><i class="fas fa-play"></i></button>{% endif %}
+                        <div class="flex flex-wrap gap-2 justify-between items-center">
+                            
+                            <div class="flex-grow">
+                                {% if info.partida.status == 'AGUARDANDO' %}
+                                    <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="bg-green-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-green-600" title="Iniciar Primeira Rodada"><i class="fas fa-play"></i> Iniciar</button>
+                                    </form>
+                                {% elif info.partida.status == 'INICIADA' %}
+                                    {% if info.rodada_ativa %}
+                                        {% if not info.rodada_ativa.produto_demandado %}
+                                            <a href="{% url 'definir_demanda' info.rodada_ativa.id %}" class="bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-yellow-600" title="Definir Demanda da Rodada"><i class="fas fa-bullhorn"></i> Demanda</a>
+                                        {% elif not info.todos_decidiram %}
+                                            <button class="bg-gray-500 text-white text-xs font-bold py-1 px-3 rounded-full cursor-not-allowed" title="Aguardando todos os jogadores tomarem suas decisões" disabled><i class="fas fa-hourglass-half"></i> Aguardando</button>
+                                        {% else %}
+                                            <form action="{% url 'avancar_rodada' info.partida.id %}" method="post" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="bg-blue-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-blue-600" title="Processar e Avançar Rodada"><i class="fas fa-forward"></i> Avançar</button>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        <button class="bg-red-500 text-white text-xs font-bold py-1 px-3 rounded-full cursor-not-allowed" disabled>Erro de Estado</button>
+                                    {% endif %}
                                 {% endif %}
-                                <form action="{% url 'toggle_avanco_automatico' info.partida.id %}" method="post" class="inline">{% csrf_token %}{% if info.partida.avanco_automatico %}<button type="submit" class="bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-yellow-600" title="Desligar Avanço Automático"><i class="fas fa-toggle-on"></i></button>{% else %}<button type="submit" class="bg-gray-400 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-gray-500" title="Ligar Avanço Automático"><i class="fas fa-toggle-off"></i></button>{% endif %}</form>
-                                <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('Tem certeza?');">{% csrf_token %}<button type="submit" class="bg-red-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-600" title="Finalizar Partida"><i class="fas fa-flag-checkered"></i></button></form>
-                            {% else %}
-                                <span class="text-sm text-gray-500 mr-2">Partida Finalizada</span>
-                                <a href="{% url 'admin_spectator_view' info.partida.id %}" class="bg-indigo-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-indigo-600" title="Ver Relatório Final"><i class="fas fa-poll-h"></i> Relatório</a>
-                                <form action="{% url 'excluir_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('ATENÇÃO: Esta ação é irreversível. Deseja realmente excluir esta partida e todos os seus dados?');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="bg-gray-700 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-700" title="Excluir Partida Permanentemente">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            {% endif %}
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                {% if info.partida.status != 'FINALIZADA' %}
+                                    <a href="{% url 'admin_spectator_view' info.partida.id %}" class="bg-indigo-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-indigo-600" title="Ver como Espectador"><i class="fas fa-binoculars"></i></a>
+                                    <form action="{% url 'toggle_avanco_automatico' info.partida.id %}" method="post" class="inline">{% csrf_token %}{% if info.partida.avanco_automatico %}<button type="submit" class="bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-yellow-600" title="Desligar Avanço Automático"><i class="fas fa-toggle-on"></i></button>{% else %}<button type="submit" class="bg-gray-400 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-gray-500" title="Ligar Avanço Automático"><i class="fas fa-toggle-off"></i></button>{% endif %}</form>
+                                    <form action="{% url 'finalizar_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('Tem certeza?');">{% csrf_token %}<button type="submit" class="bg-red-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-600" title="Finalizar Partida"><i class="fas fa-flag-checkered"></i></button></form>
+                                {% else %}
+                                    <a href="{% url 'resultados_finais' info.partida.id %}" class="bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-yellow-600" title="Ver Pódio de Resultados"><i class="fas fa-trophy"></i></a>
+                                {% endif %}
+                                <form action="{% url 'excluir_partida' info.partida.id %}" method="post" class="inline" onsubmit="return confirm('ATENÇÃO: Esta ação é irreversível. Deseja realmente excluir esta partida e todos os seus dados?');">{% csrf_token %}<button type="submit" class="bg-gray-700 text-white text-xs font-bold py-1 px-3 rounded-full hover:bg-red-700" title="Excluir Partida Permanentemente"><i class="fas fa-trash"></i></button></form>
+                            </div>
+
                         </div>
                     </div>
                 </div>

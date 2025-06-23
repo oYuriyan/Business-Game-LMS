@@ -10,30 +10,54 @@
             <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Veja as partidas disponíveis e junte-se a uma para começar.</p>
         </header>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for partida in partidas_disponiveis %}
+        
+        {% for info in info_partidas_disponiveis %}
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300">
                 <div class="p-6">
                     <div class="flex justify-between items-start">
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ partida.nome }}</h3>
-                        <span class="text-xs font-bold uppercase py-1 px-3 rounded-full {% if partida.status == 'INICIADA' %} bg-green-200 text-green-800 {% else %} bg-gray-200 text-gray-800 {% endif %}">
-                            {{ partida.get_status_display }}
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ info.partida.nome }}</h3>
+                        
+                        <span class="text-xs font-bold uppercase py-1 px-3 rounded-full 
+                            {% if info.partida.status == 'INICIADA' %} bg-green-200 text-green-800 
+                            {% elif info.partida.status == 'AGUARDANDO' %} bg-blue-200 text-blue-800
+                            {% else %} bg-gray-200 text-gray-800 {% endif %}">
+                            {{ info.partida.get_status_display }}
                         </span>
                     </div>
-                    <p class="text-gray-600 dark:text-gray-400 mt-2"><i class="fas fa-user-shield mr-2"></i> Admin: <strong>{{ partida.admin.username }}</strong></p>
-                    <p class="text-gray-600 dark:text-gray-400"><i class="fas fa-users mr-2"></i> Jogadores: <strong>{{ partida.jogadorpartida_set.count }} / 4</strong></p>
+                    
+                    {% if info.partida.admin %}
+                    <p class="text-gray-600 dark:text-gray-400 mt-2"><i class="fas fa-user-shield mr-2"></i> Admin: <strong>{{ info.partida.admin.username }}</strong></p>
+                    {% endif %}
+
+                    <p class="text-gray-600 dark:text-gray-400"><i class="fas fa-users mr-2"></i> Jogadores: <strong>{{ info.jogadores_count }} / {{ info.partida.max_jogadores }}</strong></p>
                 </div>
+                
                 <div class="mt-auto bg-gray-50 dark:bg-gray-700 p-4">
-                    {% if partida.id in partidas_do_jogador %}
-                        <a href="{% url 'partida_detalhe' partida.id %}" class="bg-gray-400 text-white font-bold py-2 px-6 rounded-full w-full block text-center cursor-not-allowed">Já está na partida</a>
-                    {% else %}
-                        <form action="{% url 'entrar_partida' partida.id %}" method="post">
+                    {% if info.partida.id in partidas_do_jogador %}
+                        <a href="{% url 'partida_detalhe' info.partida.id %}" class="w-full bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300 block text-center">
+                            <i class="fas fa-arrow-right mr-2"></i> Voltar à Sala
+                        </a>
+                    {% elif info.partida.status == 'INICIADA' %}
+                        <button class="w-full bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-full cursor-not-allowed" disabled>
+                            <i class="fas fa-hourglass-half mr-2"></i> Em Andamento
+                        </button>
+                    {% elif info.jogadores_count >= info.partida.max_jogadores %}
+                        <button class="w-full bg-red-400 text-red-900 font-bold py-2 px-6 rounded-full cursor-not-allowed" disabled>
+                            <i class="fas fa-lock mr-2"></i> Partida Cheia
+                        </button>
+                    {% elif info.partida.status == 'AGUARDANDO' %}
+                         <form action="{% url 'entrar_partida' info.partida.id %}" method="post">
                             {% csrf_token %}
-                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300">
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300">
                                 <i class="fas fa-play mr-2"></i> Entrar na Partida
                             </button>
                         </form>
+                    {% else %}
+                        <button class="w-full bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-full cursor-not-allowed" disabled>
+                           Indisponível
+                        </button>
                     {% endif %}
-                </div>
+                    </div>
             </div>
         {% empty %}
             <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">

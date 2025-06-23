@@ -7,8 +7,6 @@ from game.services.controle_rodada import avancar_rodada as avancar_rodada_servi
 from game.dados_setup import CUSTOS_PRODUCAO_PADRAO, CUSTOS_TRANSPORTE_PADRAO
 from game.models import CustoProducao, CustoTransporte, Produto
 
-# O decorator garante que só superusuários acessem estas páginas
-# Esta é a view principal do painel do admin
 @user_passes_test(lambda u: u.is_superuser)
 def painel_admin(request):
     partidas = Partida.objects.all().order_by('-data_inicio')
@@ -17,10 +15,20 @@ def painel_admin(request):
     for partida in partidas:
         rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
         jogadores = JogadorPartida.objects.filter(partida=partida)
+        
+        todos_decidiram = False
+        jogadores_que_decidiram = []
+        if rodada_ativa and jogadores.exists():
+            jogadores_que_decidiram = Decisao.objects.filter(rodada=rodada_ativa).values_list('jogador_id', flat=True)
+            if set(jogadores.values_list('jogador_id', flat=True)) == set(jogadores_que_decidiram):
+                todos_decidiram = True
+        
         partidas_info.append({
             'partida': partida,
             'rodada_ativa': rodada_ativa,
-            'jogadores': jogadores
+            'jogadores': jogadores,
+            'jogadores_que_decidiram': jogadores_que_decidiram,
+            'todos_decidiram': todos_decidiram,
         })
 
     context = {
@@ -57,19 +65,23 @@ def popular_dados_base():
 def criar_partida_view(request):
     if request.method == 'POST':
         nome_partida = request.POST.get('nome_partida')
-        # Pega o valor do novo campo
-        max_rodadas = request.POST.get('max_rodadas', 7) 
+        max_rodadas = request.POST.get('max_rodadas', 7)
+        max_jogadores = request.POST.get('max_jogadores', 4)
 
         if nome_partida:
             popular_dados_base()
-            # Salva a partida com o número de rodadas definido
+
             partida = Partida.objects.create(
                 nome=nome_partida,
                 admin=request.user,
-                max_rodadas=max_rodadas
+                max_rodadas=int(max_rodadas), 
+                max_jogadores=int(max_jogadores),
+                status='AGUARDANDO'
             )
-            messages.success(request, f"Partida '{partida.nome}' criada com {max_rodadas} rodadas.")
+            
+            messages.success(request, f"Partida '{partida.nome}' criada com sucesso.")
             return redirect('painel_admin')
+            
     return render(request, 'criar_partida.html')
 
 # View para a PÁGINA de definir a demanda de uma rodada

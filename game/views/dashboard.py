@@ -9,10 +9,9 @@ from decimal import Decimal
 
 @login_required
 def dashboard_view(request):
-    # Encontra todas as associações de partida para o jogador logado
     jogador_partidas = JogadorPartida.objects.filter(
         jogador=request.user
-    ).exclude(partida__status='FINALIZADA').select_related('partida')
+    ).select_related('partida')
     
     info_partidas_jogador = []
     for jp in jogador_partidas:
@@ -23,13 +22,16 @@ def dashboard_view(request):
         decisao_feita = False
         if rodada_ativa:
             decisao_feita = Decisao.objects.filter(rodada=rodada_ativa, jogador=request.user).exists()
+        
+        jogadores_count = jp.partida.jogadores.count()
 
         info_partidas_jogador.append({
             'jogador_partida': jp,
             'partida': jp.partida,
             'rodada_ativa': rodada_ativa,
             'estoques': estoques,
-            'decisao_feita': decisao_feita
+            'decisao_feita': decisao_feita,
+            'jogadores_count': jogadores_count,
         })
 
     context = {
@@ -39,11 +41,18 @@ def dashboard_view(request):
 
 @login_required
 def lobby_view(request):
-    partidas_disponiveis = Partida.objects.exclude(status='FINALIZADA').order_by('-data_inicio')
+    partidas_disponiveis_qs = Partida.objects.exclude(status='FINALIZADA').order_by('-data_inicio')
     partidas_do_jogador = JogadorPartida.objects.filter(jogador=request.user).values_list('partida_id', flat=True)
 
+    info_partidas_disponiveis = []
+    for partida in partidas_disponiveis_qs:
+        info_partidas_disponiveis.append({
+            'partida': partida,
+            'jogadores_count': partida.jogadores.count() # Contagem de jogadores atuais
+        })
+
     context = {
-        'partidas_disponiveis': partidas_disponiveis,
+        'info_partidas_disponiveis': info_partidas_disponiveis, 
         'partidas_do_jogador': list(partidas_do_jogador),
     }
     return render(request, 'lobby.html', context)
@@ -72,6 +81,21 @@ EMPRESAS_SETUP = {
 def entrar_partida_view(request, partida_id):
     partida = get_object_or_404(Partida, id=partida_id)
     partida_para_entrar = get_object_or_404(Partida, id=partida_id)
+    jogador = request.user
+
+    if partida.status != 'AGUARDANDO':
+        messages.error(request, 'Esta partida não está mais aceitando novos jogadores.')
+        return redirect('lobby')
+
+    jogadores_na_partida = partida.jogadores.count()
+    if jogadores_na_partida >= partida.max_jogadores:
+        messages.error(request, f"A partida '{partida.nome}' está cheia.")
+        return redirect('lobby')
+
+    jogador_partida_existente = JogadorPartida.objects.filter(partida=partida, jogador=jogador).first()
+    if jogador_partida_existente:
+        return redirect('partida_detalhe', partida_id=partida.id)
+
     partidas_ativas_do_jogador = JogadorPartida.objects.filter(
         jogador=request.user
     ).exclude(partida__status='FINALIZADA').exclude(partida=partida_para_entrar)
