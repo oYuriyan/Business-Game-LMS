@@ -1,12 +1,3 @@
-/* ---------------------------------
-           TELA DE PARTIDAS
-   ---------------------------------
-   Estilos específicos para o lobby:
-   - Ícones orbitando
-   - Lista de partidas
-   - Botões visuais de ação
-*/
-
 .orbita-container {
     display: flex;
     justify-content: center;
@@ -43,7 +34,6 @@
     100% { transform: rotate(360deg); }
   }
   
-  /* Estilização da lista de partidas */
   .lobby-partidas {
     background-color: white;
     padding: 1.5rem;

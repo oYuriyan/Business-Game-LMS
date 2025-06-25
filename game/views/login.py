@@ -5,7 +5,7 @@ from django.contrib import messages
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard') # Se já está logado, manda para o dashboard
+        return redirect('dashboard')
     if request.method == 'POST':
         usuario = request.POST.get('username')
         senha = request.POST.get('password')
@@ -30,7 +30,7 @@ def logout_view(request):
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard') # Se já está logado, manda para o dashboard
+        return redirect('dashboard')
     if request.method == 'POST':
         username = request.POST.get('username')
         pass1 = request.POST.get('password')

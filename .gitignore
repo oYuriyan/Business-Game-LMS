@@ -1,33 +1,25 @@
 # ────────────────────────────────────────────────
-# AMBIENTE VIRTUAL
 venv/
 
 # ────────────────────────────────────────────────
-# PYTHON CACHE
 __pycache__/
 *.py[cod]
 *$py.class
 
 # ────────────────────────────────────────────────
-# BANCO DE DADOS LOCAL (desenvolvimento)
 db.sqlite3
 
 # ────────────────────────────────────────────────
-# VARIÁVEIS DE AMBIENTE
 .env
 
 # ────────────────────────────────────────────────
-# MIGRATIONS (serão versionadas, portanto NÃO ignoradas)
-# Apenas ignorar os arquivos de cache gerados
 **/migrations/__pycache__/
 
 # ────────────────────────────────────────────────
-# VSCODE E OUTRAS CONFIGS LOCAIS
 .vscode/
 *.code-workspace
 
 # ────────────────────────────────────────────────
-# ARQUIVOS TEMPORÁRIOS
 *.log
 *.pot
 *.mo
@@ -36,7 +28,6 @@ db.sqlite3
 *.swo
 
 # ────────────────────────────────────────────────
-# OUTROS (se estiver usando pacotes extras)
 node_modules/
 coverage/
 htmlcov/

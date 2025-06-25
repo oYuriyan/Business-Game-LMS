@@ -155,7 +155,7 @@ def avancar_rodada(partida: Partida) -> Rodada | None:
     # 2. Se houver uma rodada ativa, processa e desativa ela.
     if rodada_ativa_para_processar:
         if not todos_jogadores_decidiram(rodada_ativa_para_processar):
-            return None  # Retorna cedo se nem todos os jogadores decidiram.
+            return None
         
         processar_rodada_atual(rodada_ativa_para_processar)
         rodada_ativa_para_processar.ativo = False

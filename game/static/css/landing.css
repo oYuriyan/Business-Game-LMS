@@ -1,13 +1,8 @@
-/* ----------------------------------
-          PÁGINA INSTITUCIONAL
-   ---------------------------------- */
-
-   body {
+  body {
     background: linear-gradient(to right, #1A1A2E, #212121);
     color: var(--cor-claro);
   }
 
-  /* Botão de alternância de tema */
   .theme-button {
     position: fixed;
     top: 20px;
@@ -27,7 +22,6 @@
   .theme-button:hover {
     background-color: #fb8c00;
   }
-  /* Tema escuro aplicado ao body */
   .dark-mode {
     background: linear-gradient(to right, #1c003d, #2d0059);
     color: #f0f0f0;
@@ -84,7 +78,6 @@
     background-color: var(--cor-aviso);
   }
   
-  /* Seção informativa */
   .info-section {
     background-color: #212121;
     padding: 3rem 2rem;
@@ -104,7 +97,6 @@
     filter: drop-shadow(0 0 3px var(--cor-ciano));
   }
   
-  /* Rodapé */
    footer {
     background-color: #121212;
     color: var(--cor-claro);

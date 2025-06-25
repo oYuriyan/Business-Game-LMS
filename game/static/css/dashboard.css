@@ -1,6 +1,6 @@
 .game-dashboard-container {
     width: 100%;
-    max-width: 1400px; /* Um pouco mais largo para acomodar os painéis */
+    max-width: 1400px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
@@ -33,14 +33,14 @@
 }
 
 .action-panel {
-    flex: 3; /* Ocupa mais espaço */
+    flex: 3;
     min-width: 350px;
 }
 
 .status-panel {
-    flex: 2; /* Ocupa menos espaço */
+    flex: 2;
     min-width: 300px;
-    position: sticky; /* Fica fixo ao rolar a página */
+    position: sticky;
     top: 20px;
 }
 
@@ -61,7 +61,7 @@
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* Espaço entre o ícone e o texto */
+    gap: 0.5rem;
 }
 
 .status-item {
@@ -78,7 +78,7 @@
 }
 
 .unidades-container {
-    max-height: 300px; /* Limita a altura e adiciona uma barra de rolagem se necessário */
+    max-height: 300px;
     overflow-y: auto;
     padding-right: 10px;
 }
@@ -94,7 +94,6 @@
     align-items: center;
 }
 
-/* Compatibilidade com Dark Mode */
 .dark-mode .info-card { background-color: #2c3034; border-color: #444; }
 .dark-mode .info-card h3, .dark-mode .info-card h4 { color: #f8f9fa; border-color: #007bff; }
 .dark-mode .unidade-card { background-color: #3a3f44; border-color: #555; }

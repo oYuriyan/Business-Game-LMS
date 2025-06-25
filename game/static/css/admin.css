@@ -14,14 +14,12 @@
     color: #ced4da;
 }
 
-/* Reutilizando o estilo de card do dashboard */
 .card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
 }
 
-/* Opcional: Ajustes finos no footer do card para o admin */
 .partida-card-footer .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.8rem;
@@ -38,7 +36,6 @@
     margin: 0;
 }
 
-/* Estilos para os formulários de Criar Partida e Definir Demanda */
 .styled-form .form-group {
     margin-bottom: 1.5rem;
 }
@@ -66,7 +63,6 @@
     margin-top: 2rem;
 }
 
-/* Estilos para a tabela de produtos */
 .info-card .styled-table {
     width: 100%;
     border-collapse: collapse;

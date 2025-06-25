@@ -48,7 +48,7 @@ def lobby_view(request):
     for partida in partidas_disponiveis_qs:
         info_partidas_disponiveis.append({
             'partida': partida,
-            'jogadores_count': partida.jogadores.count() # Contagem de jogadores atuais
+            'jogadores_count': partida.jogadores.count()
         })
 
     context = {
@@ -57,7 +57,6 @@ def lobby_view(request):
     }
     return render(request, 'lobby.html', context)
 
-# Dados das tabelas para o setup inicial das empresas
 EMPRESAS_SETUP = {
     'Empresa A': {
         'Cafeteira': {'Unidade 1': 100, 'Unidade 2': 80, 'Unidade 3': 50},
@@ -115,14 +114,12 @@ def entrar_partida_view(request, partida_id):
         else:
             nome_empresa_designada = empresas_disponiveis[num_jogadores_atual]
 
-            # Cria a associação JogadorPartida
             jp = JogadorPartida.objects.create(
                 partida=partida_para_entrar, 
                 jogador=request.user,
                 nome_empresa_jogador=nome_empresa_designada
             )
 
-            # Popula as Unidades e estoques iniciais para o jogador
             if nome_empresa_designada in EMPRESAS_SETUP:
                 setup_empresa = EMPRESAS_SETUP[nome_empresa_designada]
                 for nome_produto, unidades in setup_empresa.items():
@@ -148,7 +145,6 @@ def partida_detalhe_view(request, partida_id):
     jogador_partida = get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
     rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
 
-    # Lógica de tomada de decisão (o seu código, com o redirect corrigido)
     if request.method == 'POST' and rodada_ativa:
         try:
             unidade_id = request.POST.get('unidade_origem_id')
@@ -170,7 +166,6 @@ def partida_detalhe_view(request, partida_id):
                     messages.success(request, "Sua decisão para a rodada foi registrada com sucesso!")
                     partida.refresh_from_db() 
                     if partida.avanco_automatico:
-                        # Re-checa se todos decidiram apos a decisão atual ser salva.
                         if todos_jogadores_decidiram(rodada_ativa):
                             messages.info(request, "Todos os jogadores decidiram. A rodada será avançada automaticamente.")
                             avancar_rodada_service(partida)
@@ -178,7 +173,6 @@ def partida_detalhe_view(request, partida_id):
         except (ValueError, TypeError):
             messages.error(request, "Por favor, insira valores válidos.")
 
-    # Busca de dados para exibir na página
     unidades_do_jogador = Unidade.objects.filter(jogador_partida=jogador_partida).order_by('localidade', 'produto__nome')
     decisao_feita = False
     unidades_para_decisao = []
@@ -192,7 +186,6 @@ def partida_detalhe_view(request, partida_id):
     custos_producao = CustoProducao.objects.filter(nome_empresa_template=nome_empresa).order_by('produto__nome')
     custos_transporte_raw = CustoTransporte.objects.filter(nome_empresa_template=nome_empresa).order_by('cd_origem', 'local_destino')
 
-    # Agrupando custos de transporte por unidade de origem para exibição limpa
     custos_transporte_agrupados = {}
     for custo in custos_transporte_raw:
         if custo.cd_origem not in custos_transporte_agrupados:
@@ -215,13 +208,10 @@ def partida_detalhe_view(request, partida_id):
 @login_required
 def resultados_rodada_view(request, rodada_id):
     rodada = get_object_or_404(Rodada, id=rodada_id)
-    # Garante que o jogador pertence à partida desta rodada
     get_object_or_404(JogadorPartida, partida=rodada.partida, jogador=request.user)
     
-    # Busca todas as decisões daquela rodada para mostrar o "pregão"
     decisoes_da_rodada = Decisao.objects.filter(rodada=rodada).select_related('jogador', 'produto').order_by('preco_unitario')
     
-    # Os resultados já foram calculados e salvos no campo JSON da rodada
     resultados = rodada.resultados
     
     context = {
@@ -234,18 +224,16 @@ def resultados_rodada_view(request, rodada_id):
 
 @login_required
 def reabastecer_estoque_view(request, estoque_id):
-    # Garante que a ação seja feita por um POST para segurança
     if request.method == 'POST':
         estoque = get_object_or_404(Unidade, id=estoque_id)
         jogador_partida = estoque.jogador_partida
 
-        # Verifica se o jogador logado é o dono deste estoque
         if jogador_partida.jogador != request.user:
             messages.error(request, "Você não tem permissão para realizar esta ação.")
             return redirect('dashboard')
 
         CUSTO_REABASTECIMENTO = Decimal('5000.00')
-        QUANTIDADE_REABASTECIDA = 100 # Estoque volta para 100 unidades
+        QUANTIDADE_REABASTECIDA = 100
 
         if estoque.quantidade > 0:
             messages.warning(request, "Você só pode reabastecer itens com estoque zerado.")
@@ -260,7 +248,6 @@ def reabastecer_estoque_view(request, estoque_id):
             
             messages.success(request, f"Estoque de {estoque.produto.nome} reabastecido com sucesso!")
     
-    # Redireciona de volta para o dashboard em qualquer caso
     return redirect('dashboard')
 
 @login_required
@@ -272,7 +259,6 @@ def game_state_api(request, partida_id):
     jogador_partida = get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
     rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
 
-    # Prepara os dados para serem enviados como JSON
     data = {
         'saldo': float(jogador_partida.saldo),
         'rodada_ativa': None,
@@ -299,10 +285,8 @@ def game_state_api(request, partida_id):
 def resultados_finais_view(request, partida_id):
     partida = get_object_or_404(Partida, id=partida_id, status='FINALIZADA')
     
-    # Garante que o jogador que está acessando pertence à partida
     get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
 
-    # Busca todos os jogadores da partida e ordena pelo saldo final em ordem decrescente
     jogadores_classificacao = JogadorPartida.objects.filter(partida=partida).order_by('-saldo')
 
     context = {

@@ -39,7 +39,6 @@ def painel_admin(request):
 def popular_dados_base():
     """ Popula os custos de produção e transporte se eles não existirem. """
     
-    # Popula Custos de Produção
     for empresa, produtos in CUSTOS_PRODUCAO_PADRAO.items():
         for nome_produto, custo in produtos.items():
             produto_obj, _ = Produto.objects.get_or_create(nome=nome_produto)
@@ -49,7 +48,6 @@ def popular_dados_base():
                 defaults={'custo_unitario': custo}
             )
 
-    # Popula Custos de Transporte
     for item in CUSTOS_TRANSPORTE_PADRAO:
         produto_obj, _ = Produto.objects.get_or_create(nome=item['produto'])
         CustoTransporte.objects.get_or_create(
@@ -60,7 +58,6 @@ def popular_dados_base():
             defaults={'custo_unitario_transporte': item['custo']}
         )
 
-# View para a PÁGINA de criar uma nova partida
 @user_passes_test(lambda u: u.is_superuser)
 def criar_partida_view(request):
     if request.method == 'POST':
@@ -84,7 +81,6 @@ def criar_partida_view(request):
             
     return render(request, 'criar_partida.html')
 
-# View para a PÁGINA de definir a demanda de uma rodada
 @user_passes_test(lambda u: u.is_superuser)
 def definir_demanda_view(request, rodada_id):
     rodada = get_object_or_404(Rodada, id=rodada_id)
@@ -107,21 +103,17 @@ def definir_demanda_view(request, rodada_id):
     }
     return render(request, 'definir_demanda.html', context)
 
-# View para o botao de avançar a rodada de uma partida
 @user_passes_test(lambda u: u.is_superuser)
 def avancar_rodada_view(request, partida_id):
     if request.method == 'POST':
         partida = get_object_or_404(Partida, id=partida_id)
 
-        # Verifica se é a primeira rodada que está para ser iniciada
         is_first_round = not Rodada.objects.filter(partida=partida).exists()
         
-        # Se for a primeira rodada, verifica a contagem de jogadores
         if is_first_round and partida.jogadorpartida_set.count() < 2:
             messages.error(request, f"Não é possível iniciar a partida '{partida.nome}' com menos de 2 jogadores.")
             return redirect('painel_admin')
 
-        # Se a verificação passar, a lógica normal continua
         resultado_rodada = avancar_rodada_service(partida)
         
         if resultado_rodada is None:
@@ -141,12 +133,10 @@ def finalizar_partida_view(request, partida_id):
     if request.method == 'POST':
         partida = get_object_or_404(Partida, id=partida_id)
         
-        # Muda o status da partida para finalizada
         partida.status = 'FINALIZADA'
         partida.data_fim = timezone.now()
         partida.save()
         
-        # Também desativa qualquer rodada que estivesse ativa
         Rodada.objects.filter(partida=partida, ativo=True).update(ativo=False)
         
         messages.info(request, f"A partida '{partida.nome}' foi finalizada manualmente.")
@@ -158,10 +148,8 @@ def admin_partida_spectator_view(request, partida_id):
     partida = get_object_or_404(Partida, id=partida_id)
     rodada_ativa = Rodada.objects.filter(partida=partida, ativo=True).first()
     
-    # Busca todos os jogadores da partida e suas informações
     jogadores_da_partida = JogadorPartida.objects.filter(partida=partida).order_by('nome_empresa_jogador')
     
-    # Prepara uma lista com dados detalhados de cada jogador
     info_jogadores = []
     for jp in jogadores_da_partida:
         unidades = Unidade.objects.filter(jogador_partida=jp).order_by('localidade', 'produto__nome')
@@ -183,7 +171,6 @@ def admin_partida_spectator_view(request, partida_id):
 def toggle_avanco_automatico_view(request, partida_id):
     if request.method == 'POST':
         partida = get_object_or_404(Partida, id=partida_id)
-        # Inverte o valor booleano atual
         partida.avanco_automatico = not partida.avanco_automatico
         partida.save()
         
@@ -194,7 +181,6 @@ def toggle_avanco_automatico_view(request, partida_id):
     
 @user_passes_test(lambda u: u.is_superuser)
 def excluir_partida_view(request, partida_id):
-    # Apenas aceita requisições POST para segurança
     if request.method == 'POST':
         partida = get_object_or_404(Partida, id=partida_id)
         partida.delete()

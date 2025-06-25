@@ -6,19 +6,13 @@
 <div class="bg-gray-100 dark:bg-gray-900 min-h-screen">
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
 
-        <!-- Cabeçalho da Página -->
         <header class="mb-8">
             <h1 class="text-4xl font-bold text-gray-800 dark:text-white">Sala da Partida: <span class="text-blue-600">{{ partida.nome }}</span></h1>
             <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">Você joga como <strong>{{ jogador_partida.nome_empresa_jogador }}</strong> | Rodada: <strong>{{ rodada_ativa.numero|default:"Aguardando Início" }}</strong></p>
         </header>
 
-        <!-- Container Principal com Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- Coluna Principal (Esquerda) -->
             <main class="lg:col-span-2 space-y-8">
-
-                <!-- Card de Demanda e Decisão -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                     {% if rodada_ativa %}
                         <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center"><i class="fas fa-bullhorn text-blue-500 mr-3"></i> Demanda do Mercado (Rodada {{ rodada_ativa.numero }})</h3>
@@ -44,19 +38,16 @@
                                                     <option value="{{ unidade.id }}">{{ unidade.localidade }} ({{ unidade.quantidade }} un.)</option>
                                                 {% endfor %}
                                             </select>
-                                            <!-- DICA ADICIONADA -->
                                             <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">A unidade escolhida definirá o custo de transporte e de onde o estoque será debitado.</small>
                                         </div>
                                         <div>
                                             <label for="quantidade_produzida" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Produção Adicional</label>
                                             <input type="number" name="quantidade_produzida" min="0" value="0" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Insira a quantidade de itens que deseja fabricar nesta rodada. O custo será debitado do seu saldo.">
-                                            <!-- DICA ADICIONADA -->
                                             <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">O custo de produção será debitado imediatamente do seu saldo.</small>
                                         </div>
                                         <div>
                                             <label for="preco_unitario" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preço de Venda Unitário</label>
                                             <input type="number" name="preco_unitario" step="0.01" min="0.01" required class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" title="Defina o preço pelo qual você ofertará seu produto. O menor preço geralmente vence a demanda.">
-                                            <!-- DICA ADICIONADA -->
                                             <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Analise seus custos para definir uma margem de lucro competitiva.</small>
                                         </div>
                                         <div class="pt-2">
@@ -76,7 +67,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Card de Resultados Anteriores -->
                 {% if ultima_rodada_finalizada %}
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
                      <a href="{% url 'resultados_rodada' ultima_rodada_finalizada.id %}" class="text-blue-600 hover:text-blue-800 font-semibold"><i class="fas fa-poll"></i> Ver Resultados da Rodada {{ ultima_rodada_finalizada.numero }}</a>
@@ -84,9 +74,7 @@
                 {% endif %}
             </main>
 
-            <!-- Coluna Lateral (Direita) -->
             <aside class="lg:col-span-1 space-y-8">
-                <!-- Card de Status -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-user-circle text-blue-500 mr-2"></i>Seu Painel</h3>
                     <div class="space-y-4">
@@ -96,7 +84,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Card de Estoques -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-boxes text-blue-500 mr-2"></i>Suas Unidades</h3>
                     <div class="space-y-3">
@@ -120,18 +107,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         const partidaId = {{ partida.id }};
         const apiUrl = `/api/partida/${partidaId}/state/`;
-        const formElement = document.querySelector('form[method="post"]'); // O formulário de decisão
-
-        // Função principal que busca os dados no servidor
+        const formElement = document.querySelector('form[method="post"]');
         async function fetchGameState() {
-            // --- A VERIFICAÇÃO CRÍTICA ---
-            // Verifica se o utilizador está ativamente a digitar ou a selecionar algo no formulário.
             const activeElement = document.activeElement;
             const isUserInteractingWithForm = formElement && formElement.contains(activeElement) && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'SELECT');
 
             if (isUserInteractingWithForm) {
                 console.log('Polling pausado: Utilizador está a interagir com o formulário.');
-                return; // Sai imediatamente da função, não toca em nada na página.
+                return;
             }
             
             try {
@@ -142,11 +125,7 @@
                 }
                 const data = await response.json();
 
-                // Verifica se a página atual mostra o formulário ou a mensagem de "Decisão Enviada"
                 const isDecisionFormVisible = document.querySelector('form.styled-form') !== null;
-
-                // A página SÓ será recarregada se uma nova rodada começar E o utilizador NÃO estiver
-                // a ver o formulário de decisão (ou seja, ele já enviou sua decisão).
                 if (!isDecisionFormVisible) {
                     const rodadaHeader = document.querySelector('.game-header strong');
                     const rodadaAtualNumero = rodadaHeader ? parseInt(rodadaHeader.textContent.replace('Rodada: ', '')) : null;
@@ -154,11 +133,10 @@
                     if (data.rodada_ativa && rodadaAtualNumero !== data.rodada_ativa.numero) {
                         console.log('Nova rodada detectada! Recarregando...');
                         window.location.reload();
-                        return; // Para a execução após o recarregamento
+                        return;
                     }
                 }
 
-                // Atualizações silenciosas que podem acontecer a qualquer momento (quando o utilizador não está a digitar)
                 updateSilentElements(data);
 
             } catch (error) {
@@ -166,9 +144,7 @@
             }
         }
 
-        // Função que atualiza apenas os pedaços da página que não interferem com o utilizador
         function updateSilentElements(data) {
-            // Atualiza o saldo
             const saldoElement = document.querySelector('.status-panel .text-success');
             if (saldoElement) {
                 const saldoFormatado = Number(data.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -176,11 +152,9 @@
                     saldoElement.textContent = saldoFormatado;
                 }
             }
-            // Adicionar aqui outras atualizações silenciosas, se necessário (ex: estoque)
         }
 
-        // Inicia o "polling": busca os dados a cada 5 segundos
-        setInterval(fetchGameState, 5000); // 5000 ms = 5 segundos
+        setInterval(fetchGameState, 5000);
     });
 </script>
 {% endblock %}
