@@ -5,6 +5,7 @@ from game.models import JogadorPartida, Rodada, Unidade, Decisao, Partida, Produ
 from game.services.controle_rodada import avancar_rodada as avancar_rodada_service, todos_jogadores_decidiram
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from decimal import Decimal
 
 @login_required
@@ -284,8 +285,12 @@ def game_state_api(request, partida_id):
 @login_required
 def resultados_finais_view(request, partida_id):
     partida = get_object_or_404(Partida, id=partida_id, status='FINALIZADA')
-    
-    get_object_or_404(JogadorPartida, partida=partida, jogador=request.user)
+    user = request.user
+
+    is_player_in_partida = JogadorPartida.objects.filter(partida=partida, jogador=user).exists()
+
+    if not user.is_superuser and not is_player_in_partida:
+        raise Http404("Você não tem permissão para ver os resultados desta partida.")
 
     jogadores_classificacao = JogadorPartida.objects.filter(partida=partida).order_by('-saldo')
 

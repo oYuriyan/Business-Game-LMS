@@ -22,13 +22,15 @@ def painel_admin(request):
             jogadores_que_decidiram = Decisao.objects.filter(rodada=rodada_ativa).values_list('jogador_id', flat=True)
             if set(jogadores.values_list('jogador_id', flat=True)) == set(jogadores_que_decidiram):
                 todos_decidiram = True
-        
+
+        uma_rodada_concluida = Rodada.objects.filter(partida=partida, ativo=False).exists()
         partidas_info.append({
             'partida': partida,
             'rodada_ativa': rodada_ativa,
             'jogadores': jogadores,
             'jogadores_que_decidiram': jogadores_que_decidiram,
             'todos_decidiram': todos_decidiram,
+            'uma_rodada_concluida': uma_rodada_concluida,
         })
 
     context = {
@@ -109,9 +111,15 @@ def avancar_rodada_view(request, partida_id):
         partida = get_object_or_404(Partida, id=partida_id)
 
         is_first_round = not Rodada.objects.filter(partida=partida).exists()
+
+        if is_first_round:
+            partida.status = 'INICIADA'
+            partida.save()
         
         if is_first_round and partida.jogadorpartida_set.count() < 2:
             messages.error(request, f"Não é possível iniciar a partida '{partida.nome}' com menos de 2 jogadores.")
+            partida.status = 'AGUARDANDO'
+            partida.save()
             return redirect('painel_admin')
 
         resultado_rodada = avancar_rodada_service(partida)
